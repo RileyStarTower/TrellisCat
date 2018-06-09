@@ -1,8 +1,12 @@
-QT += qml quick
+QT += qml quick widgets
 
 CONFIG += c++11
 
-SOURCES += main.cpp
+SOURCES += main.cpp \
+    card.cpp \
+    cardmodel.cpp \
+    cardmodelvector.cpp \
+    fillercard.cpp
 
 RESOURCES += qml.qrc
 
@@ -27,3 +31,9 @@ DEFINES += QT_DEPRECATED_WARNINGS
 qnx: target.path = /tmp/$${TARGET}/bin
 else: unix:!android: target.path = /opt/$${TARGET}/bin
 !isEmpty(target.path): INSTALLS += target
+
+HEADERS += \
+    card.h \
+    cardmodel.h \
+    cardmodelvector.h \
+    spacercard.h
