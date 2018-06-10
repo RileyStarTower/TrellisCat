@@ -29,6 +29,7 @@ public:
 
     // child management methods
     void addChild(Card* child);
+    void insertChild(int index, Card* child);
     void removeChild(Card* child);
     Card* getLastChild();
     Card* resolveParent(Card* parent, int childLevel);
@@ -44,6 +45,10 @@ public:
     void addBodyText(Card* bodyText);
     QVector<Card*> getChildList() const {return childList;}
     QVector<Card*> getBodyTextList() const {return bodyTextList;}
+
+    // roles for the Card UI connections
+    int getChildType();
+    int getSiblingType();
 
 private:
     QString cardText;   // main text of the card

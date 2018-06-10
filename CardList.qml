@@ -8,6 +8,5 @@ ListView {
     Layout.maximumWidth: 800
     Layout.minimumHeight: 450
     Layout.preferredHeight: 800
-    model: rowData
     delegate: CardView {    }
 }

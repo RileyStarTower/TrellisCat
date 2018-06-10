@@ -13,6 +13,7 @@ ApplicationWindow {
     color: "#160732"
 
     RowLayout {
+        x: 10; y: 10
         CardList {
             id: leftList
             model: cardModel_1

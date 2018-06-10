@@ -6,7 +6,7 @@ SOURCES += main.cpp \
     card.cpp \
     cardmodel.cpp \
     cardmodelvector.cpp \
-    fillercard.cpp
+    spacercard.cpp
 
 RESOURCES += qml.qrc
 

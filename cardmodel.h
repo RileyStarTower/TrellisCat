@@ -32,6 +32,8 @@ public:
     enum CardRoles {
         TextRole = Qt::UserRole + 1,
         TypeRole = Qt::UserRole + 2,
+        ChildTypeRole = Qt::UserRole + 3,
+        SiblingTypeRole = Qt::UserRole + 4
     };
 
     CardModel();

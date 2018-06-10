@@ -19,6 +19,10 @@ QVariant CardModel::data(const QModelIndex &index, int role) const
         return cardVector.at(index.row())->getCardText();
     } else if (role == TypeRole) {
         return cardVector.at(index.row())->getCardType();
+    } else if (role == ChildTypeRole) {
+        return cardVector.at(index.row())->getChildType();
+    } else if (role == SiblingTypeRole) {
+        return cardVector.at(index.row())->getSiblingType();
     } else {
         return "Error";
     }
@@ -70,6 +74,8 @@ QHash<int, QByteArray> CardModel::roleNames() const
     QHash<int, QByteArray> roles;
     roles[TextRole] = "cardText";
     roles[TypeRole] = "cardType";
+    roles[ChildTypeRole] = "childType";
+    roles[SiblingTypeRole] = "siblingType";
     return roles;
 }
 

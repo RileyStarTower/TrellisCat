@@ -95,6 +95,8 @@ void CardModelVector::readAllCards()
 // DFS through tree, and add spacers to fill out a grid
 void CardModelVector::addSpacers(Card* root)
 {
+    // TODO: spacers are added to end of parent's child list instead of being inserted. Is that a problem?
+
     // we don't need to add spacers for the actual root
     if (root->getLevel() == 0) {
         for (Card* child : root->getChildList()) {
@@ -119,7 +121,7 @@ void CardModelVector::addSpacers(Card* root)
 
         // then add spacers, starting at one because we don't need a spacer for the first child
         for (int i = 1; i < root->getChildList().size(); i++) {
-            SpacerCard* temp = new SpacerCard(root->getParent(), root->getLevel());
+            SpacerCard* temp = new SpacerCard(root->getParent(), root->getLevel(), root);
             insertSpacer(temp, root->getLevel(), root);
         }
     } else if (root->getChildList().size() == 1) {

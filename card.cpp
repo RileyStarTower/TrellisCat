@@ -44,6 +44,11 @@ void Card::addChild(Card* child)
     childList.append(child);
 }
 
+void Card::insertChild(int index, Card* child)
+{
+    childList.insert(index, child);
+}
+
 // Removing a child card from whever it is in the parent's child list
 void Card::removeChild(Card* child)
 {
@@ -111,6 +116,37 @@ bool Card::isSibling(Card* sibling)
 void Card::addBodyText(Card* bodyText)
 {
     bodyTextList.append(bodyText);
+}
+
+int Card::getChildType()
+{
+    if (parent->getLevel() == 0) {
+        // if the parent is the root, then this isn't a child in the UI, so it's type 0
+        return 0;
+    } else if (parent->getChildList().indexOf(this) == 0) {
+        // if this is the first child, it's type 1
+        return 1;
+    } else {
+        // all other children are type 2
+        return 2;
+    }
+}
+
+int Card::getSiblingType()
+{
+    if ((parent->getChildList().size() == 1) || (parent->getLevel() == 0)) {
+        // only child, and the top level is type 0
+        return 0;
+    } else if (parent->getChildList().indexOf(this) == 0) {
+        // first child is type 1
+        return 1;
+    }   else if (parent->getChildList().indexOf(this) < parent->getChildList().size() - 1) {
+        // middle child is type 2
+        return 2;
+    } else {
+        // last child is type 3
+        return 3;
+    }
 }
 
 // Helpful method to compose the card's level and text into the internal storage format
