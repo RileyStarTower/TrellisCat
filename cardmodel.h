@@ -30,10 +30,10 @@ class CardModel : public QAbstractListModel
 public:
     // enum used by the data function to send data to the view
     enum CardRoles {
-        TextRole = Qt::UserRole + 1,
-        TypeRole = Qt::UserRole + 2,
-        ChildTypeRole = Qt::UserRole + 3,
-        SiblingTypeRole = Qt::UserRole + 4
+        TextRole = Qt::UserRole,
+        TypeRole,
+        ChildTypeRole,
+        SiblingTypeRole,
     };
 
     CardModel();

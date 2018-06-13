@@ -1,3 +1,5 @@
+#include <QtDebug>
+
 #include "spacercard.h"
 
 // This constructor inserts a spacer in the parent's child list after the sibling Card
@@ -23,4 +25,18 @@ SpacerCard::SpacerCard(Card* parent, int level)
     this->level = level;
     this->parent = parent;
     parent->addChild(this);
+}
+
+bool SpacerCard::followedByCard()
+{
+    // start at the current SpacerCard's next sibling
+    int idx = parent->getChildList().indexOf(this) + 1;
+    for (idx; idx < parent->getChildList().size(); idx++) {
+        // if the sibling is a Card instead of a spacer, then return true
+        if (parent->getChildList().at(idx)->getCardType() == 1) {
+            return true;
+        }
+    }
+
+    return false;
 }

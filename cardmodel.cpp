@@ -32,16 +32,13 @@ QVariant CardModel::data(const QModelIndex &index, int role) const
 bool CardModel::setData(const QModelIndex &index, const QVariant &value, int role)
 {
     if (index.isValid() && role == Qt::EditRole) {
-        // TODO: TESTING ONLY writeDebug("setData", "made it");
-
         // get the relevant Card, and set its text
         int row = index.row();
         Card* card = cardVector.at(row);
+        bool ret = card->setCardText(value);
         emit dataChanged(index, index);
 
-        // TODO: TESTING ONLY writeDebug("setData", "setting data");
-
-        return card->setCardText(value);
+        return ret;
     }
 
     else return false;
@@ -72,6 +69,7 @@ bool CardModel::setHeaderData(int section, Qt::Orientation orientation, const QV
 QHash<int, QByteArray> CardModel::roleNames() const
 {
     QHash<int, QByteArray> roles;
+    roles[Qt::EditRole] = "editedData";
     roles[TextRole] = "cardText";
     roles[TypeRole] = "cardType";
     roles[ChildTypeRole] = "childType";

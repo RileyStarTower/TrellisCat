@@ -56,6 +56,7 @@ private:
 
 protected:
     int cardType;
+    int siblingType;
     Card* parent;       // parent card pointer
     int level;          // level, i.e. which column is it in
     QVector<Card*> childList;

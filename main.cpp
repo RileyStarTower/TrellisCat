@@ -2,6 +2,8 @@
 #include <QQmlApplicationEngine>
 #include <QQmlContext>
 #include <QFile>
+
+//TODO: remove
 #include <QtDebug>
 
 #include <QVector>
@@ -17,6 +19,7 @@ int main(int argc, char *argv[])
     QCoreApplication::setAttribute(Qt::AA_EnableHighDpiScaling);
     QGuiApplication app(argc, argv);
     QQmlApplicationEngine engine;
+    QQmlContext* context = engine.rootContext();
 
     // TODO: add file selection
     QFile file("/home/riley/Documents/Writing Tool Sample XML/Generic Sample.txt");
@@ -29,13 +32,10 @@ int main(int argc, char *argv[])
     CardModel* model_2 = cardModelVector->getCardModel(2);
     CardModel* model_3 = cardModelVector->getCardModel(3);
 
-//    CardModel* headers = new CardModel();
-//    headers->appendCard(new Card(QString("Main Parts")));
-//    headers->appendCard(new Card(QString("Scenes")));
-//    headers->appendCard(new Card(QString("Events")));
+    // connect the models to the editingFinished signal
 
-    QQmlContext* context = engine.rootContext();
-//    // Link the models
+
+    // Link the models
     context->setContextProperty("cardModel_1", model_1);
     context->setContextProperty("cardModel_2", model_2);
     context->setContextProperty("cardModel_3", model_3);
