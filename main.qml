@@ -12,42 +12,54 @@ ApplicationWindow {
     title: qsTr("TrellisCat")
     color: "#160732"
 
-    RowLayout {
-        // use small x and y values so the lists are shoved all the way into the corner
+    GridView {
+        id: cardGrid
+        model: gridModel
         x: 10; y: 10
-        CardList {
-            id: list_1
-            model: cardModel_1
-            boundsBehavior: Flickable.StopAtBounds
-            ScrollBar.vertical: vBar
-            KeyNavigation.priority: KeyNavigation.BeforeItem
-            KeyNavigation.tab: list_2
-        }
-        CardList {
-            id: list_2
-            anchors.left: list_1.right
-            model: cardModel_2
-            boundsBehavior: Flickable.StopAtBounds
-            ScrollBar.vertical: vBar
-            KeyNavigation.priority: KeyNavigation.BeforeItem
-            KeyNavigation.tab: list_3
-            KeyNavigation.backtab: list_1
-        }
-        CardList {
-            id: list_3
-            anchors.left: list_2.right
-            model: cardModel_3
-            boundsBehavior: Flickable.StopAtBounds
-            ScrollBar.vertical: vBar
-            KeyNavigation.priority: KeyNavigation.BeforeItem
-            KeyNavigation.backtab: list_2
-        }
+        width: 1300
+        height: parent.height
+        cellHeight: 105
+        cellWidth: 400
+        delegate: CardView {}
+        highlight: Rectangle { color: "lightsteelblue"; radius: 5 }
     }
 
-    // Scroll bar that syncs up the scrolling of all the lists
-    ScrollBar {
-        id: vBar
-        height: parent.height
-        anchors.right: parent.right
-    }
+//    RowLayout {
+//        // use small x and y values so the lists are shoved all the way into the corner
+//        x: 10; y: 10
+//        CardList {
+//            id: list_1
+//            model: cardModel_1
+//            boundsBehavior: Flickable.StopAtBounds
+//            ScrollBar.vertical: vBar
+//            KeyNavigation.priority: KeyNavigation.BeforeItem
+//            KeyNavigation.tab: list_2
+//        }
+//        CardList {
+//            id: list_2
+//            anchors.left: list_1.right
+//            model: cardModel_2
+//            boundsBehavior: Flickable.StopAtBounds
+//            ScrollBar.vertical: vBar
+//            KeyNavigation.priority: KeyNavigation.BeforeItem
+//            KeyNavigation.tab: list_3
+//            KeyNavigation.backtab: list_1
+//        }
+//        CardList {
+//            id: list_3
+//            anchors.left: list_2.right
+//            model: cardModel_3
+//            boundsBehavior: Flickable.StopAtBounds
+//            ScrollBar.vertical: vBar
+//            KeyNavigation.priority: KeyNavigation.BeforeItem
+//            KeyNavigation.backtab: list_2
+//        }
+//    }
+
+//    // Scroll bar that syncs up the scrolling of all the lists
+//    ScrollBar {
+//        id: vBar
+//        height: parent.height
+//        anchors.right: parent.right
+//    }
 }

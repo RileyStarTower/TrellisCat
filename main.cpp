@@ -28,18 +28,22 @@ int main(int argc, char *argv[])
     CardModelVector* cardModelVector = new CardModelVector(&file);
 
     // Get a subset of the models to display
-    CardModel* model_1 = cardModelVector->getCardModel(1);
-    CardModel* model_2 = cardModelVector->getCardModel(2);
-    CardModel* model_3 = cardModelVector->getCardModel(3);
+//    CardModel* model_1 = cardModelVector->getCardModel(1);
+//    CardModel* model_2 = cardModelVector->getCardModel(2);
+//    CardModel* model_3 = cardModelVector->getCardModel(3);
 
-    // connect the models to the editingFinished signal
-
+    // Create the headers model
+//    QVector<QString*>* headersVector = new QVector
 
     // Link the models
-    context->setContextProperty("cardModel_1", model_1);
-    context->setContextProperty("cardModel_2", model_2);
-    context->setContextProperty("cardModel_3", model_3);
-    engine.load(QUrl(QStringLiteral("qrc:/main.qml")));
+//    context->setContextProperty("cardModel_1", model_1);
+//    context->setContextProperty("cardModel_2", model_2);
+//    context->setContextProperty("cardModel_3", model_3);
 
+    CardModelVector* flatModel = cardModelVector->flattenModel();
+    context->setContextProperty("gridModel", flatModel->getCardModel(0));
+    flatModel->setCardFile(&file);
+
+    engine.load(QUrl(QStringLiteral("qrc:/main.qml")));
     return app.exec();
 }

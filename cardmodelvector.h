@@ -26,6 +26,7 @@ class CardModelVector : public QObject
     Q_OBJECT
 public:
     CardModelVector(QFile* cardFile);
+    CardModelVector();
 
     void addModel(CardModel model);
     void addCard(Card* card, int modelIndex);
@@ -36,6 +37,11 @@ public:
 
     CardModel* getContainingModel(Card card);
 
+    CardModelVector* flattenModel();
+
+    // TODO: figure out a better solution than this
+    void setCardFile(QFile* cardFile) { this->cardFile = cardFile; }
+
 public slots:
     void writeAllCards();
 
@@ -44,10 +50,11 @@ private:
     QVector<Card*> bodyTextVector;          // vector of body text, which needs to be stored separately from the regular cards
     QFile* cardFile;                        // we can keep the file so we can write to it as changes occur
 
+    int vectorSize();                       // returns the size of the underlying vectors (which are the same after adding spacers)
+
     void readAllCards();                    // reads all cards from a given file QFile* cardFile
     void addSpacers(Card* root);            // adds spacers to the tree of Cards, so the tree structure is preserved in the list models
     void insertSpacer(SpacerCard* spacer, int modelIndex, Card* sibling);
-
     void writeAllChildCards(Card* root, QTextStream *out);  // recursive method to write all cards to file
 };
 

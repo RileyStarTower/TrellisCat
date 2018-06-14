@@ -10,6 +10,11 @@ CardModelVector::CardModelVector(QFile* cardFile)
     addSpacers(getRoot());
 }
 
+CardModelVector::CardModelVector() : QObject()
+{
+
+}
+
 void CardModelVector::addModel(CardModel model)
 {
     cardModelVector.append(&model);
@@ -48,7 +53,12 @@ void CardModelVector::connectModels(QQmlContext* context)
 
 Card* CardModelVector::getRoot()
 {
-    return cardModelVector.at(0)->getRoot();
+    Card* root = cardModelVector.at(0)->getRoot();
+    while (root->getLevel() > 0) {
+        root = root->getParent();
+    }
+
+    return root;
 }
 
 // returns the CardModel object for the given card
@@ -58,6 +68,20 @@ CardModel* CardModelVector::getContainingModel(Card card)
     // TODO: validate the index:
     // if (level < cardModelVector.size())
     return cardModelVector.at(level);
+}
+
+CardModelVector* CardModelVector::flattenModel()
+{
+    CardModelVector* flatModel = new CardModelVector();
+    for (int i = 0; i < vectorSize(); i++) {
+//        for (CardModel* model : cardModelVector) {
+        for (int j = 1; j < cardModelVector.size(); j++) {
+            CardModel* model = cardModelVector.at(j);
+            flatModel->addCard(model->at(i), 0);
+        }
+    }
+
+    return flatModel;
 }
 
 // populates the internal vector with a series of CardModels based on the given file
@@ -147,6 +171,12 @@ void CardModelVector::writeAllCards()
     writeAllChildCards(getRoot(), &out);
 
     cardFile->close();
+}
+
+int CardModelVector::vectorSize()
+{
+    // use vector 1 because vector 0 ends up being empty
+    return cardModelVector.at(1)->size();
 }
 
 void CardModelVector::writeAllChildCards(Card* root, QTextStream* out)

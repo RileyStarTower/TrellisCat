@@ -34,6 +34,9 @@ public:
         TypeRole,
         ChildTypeRole,
         SiblingTypeRole,
+        ChildCount,
+        ColumnCount,
+        PrevSiblings
     };
 
     CardModel();
@@ -52,6 +55,8 @@ public:
     bool appendCard(Card* card);
     bool insertSpacer(SpacerCard* spacer, Card* sibling);
     Card* getRoot();
+    int size();
+    Card* at(int index);
 
 private:
     QVector<Card*> cardVector;

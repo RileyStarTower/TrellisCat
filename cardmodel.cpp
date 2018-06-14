@@ -15,16 +15,16 @@ int CardModel::rowCount(const QModelIndex &parent) const
 // I suppose we could use the role to handle that complexity, too
 QVariant CardModel::data(const QModelIndex &index, int role) const
 {
-    if (role == TextRole) {
-        return cardVector.at(index.row())->getCardText();
-    } else if (role == TypeRole) {
-        return cardVector.at(index.row())->getCardType();
-    } else if (role == ChildTypeRole) {
-        return cardVector.at(index.row())->getChildType();
-    } else if (role == SiblingTypeRole) {
-        return cardVector.at(index.row())->getSiblingType();
-    } else {
-        return "Error";
+    // TODO: make this a switch
+    switch(role) {
+    case TextRole : return cardVector.at(index.row())->getCardText();
+    case TypeRole : return cardVector.at(index.row())->getCardType();
+    case ChildTypeRole : return cardVector.at(index.row())->getChildType();
+    case SiblingTypeRole : return cardVector.at(index.row())->getSiblingType();
+    case ChildCount : return cardVector.at(index.row())->getChildCount();
+    case ColumnCount : return 3; // TODO: don't hard code it
+    case PrevSiblings: return cardVector.at(index.row())->getPrevSiblingCount();
+    default : return "Error";
     }
 }
 
@@ -69,11 +69,14 @@ bool CardModel::setHeaderData(int section, Qt::Orientation orientation, const QV
 QHash<int, QByteArray> CardModel::roleNames() const
 {
     QHash<int, QByteArray> roles;
-    roles[Qt::EditRole] = "editedData";
-    roles[TextRole] = "cardText";
-    roles[TypeRole] = "cardType";
-    roles[ChildTypeRole] = "childType";
-    roles[SiblingTypeRole] = "siblingType";
+    roles[Qt::EditRole]     = "editedData";
+    roles[TextRole]         = "cardText";
+    roles[TypeRole]         = "cardType";
+    roles[ChildTypeRole]    = "childType";
+    roles[SiblingTypeRole]  = "siblingType";
+    roles[ChildCount]       = "childCount";
+    roles[ColumnCount]      = "columnCount";
+    roles[PrevSiblings]     = "prevSiblings";
     return roles;
 }
 
@@ -127,6 +130,16 @@ bool CardModel::insertSpacer(SpacerCard *spacer, Card *sibling)
 Card* CardModel::getRoot()
 {
     return cardVector.at(0);
+}
+
+int CardModel::size()
+{
+    return cardVector.size();
+}
+
+Card* CardModel::at(int index)
+{
+    return cardVector.at(index);
 }
 
 

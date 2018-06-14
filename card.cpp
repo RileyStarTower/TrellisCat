@@ -112,6 +112,33 @@ bool Card::isSibling(Card* sibling)
     }
 }
 
+int Card::getPrevSiblingCount()
+{
+    // TODO: refactor so that we don't have copied code
+    if (parent->getChildList().indexOf(this) > 0) {
+        // if it's not the first child, find the previous Card sibling
+        int index = parent->getChildList().indexOf(this) - 1;
+        Card* temp = parent->getChildList().at(index);
+        while (temp->getCardType() != 1) {
+            index--;
+            temp = parent->getChildList().at(index);
+        }
+        return temp->getChildCount();
+    } else {
+        // if it's the first child, find the last Card child in the previous subtree
+        //Card* tempParent = parent->getPrevSiblingCount(); // oh no, it's recursive
+        // TODO: THIs is broken. We need to get the parent's previous sibling here, but we can't do that recursively now
+//        int index = tempParent->getChildCount() - 1;
+//        Card* temp = tempParent->getChildList().at(index);
+//        while (temp->getCardType() != 1) {
+//            index --;
+//            temp = tempParent->getChildList().at(index);
+//        }
+//        return temp->getChildCount();
+        return 0;
+    }
+}
+
 // Basically a setter, we're just adding new text to the card
 void Card::addBodyText(Card* bodyText)
 {
@@ -147,6 +174,11 @@ int Card::getSiblingType()
         // last child is type 3
         return 3;
     }
+}
+
+int Card::getChildCount()
+{
+    return childList.size();
 }
 
 // Helpful method to compose the card's level and text into the internal storage format

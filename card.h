@@ -22,7 +22,6 @@ public:
     Card();
 
     // make these generic so I can extend the functionality later
-    // TODO: generic? what did I mean that? maybe variant instead of string?
     QVariant getCardText();
     bool setCardText(QVariant text);
     QString getFileText();
@@ -41,6 +40,7 @@ public:
     void setParent(Card* parent) {this->parent = parent;}
     Card* getParent() const {return parent;}
     int getCardType() { return cardType; }
+    int getPrevSiblingCount();
 
     void addBodyText(Card* bodyText);
     QVector<Card*> getChildList() const {return childList;}
@@ -49,6 +49,7 @@ public:
     // roles for the Card UI connections
     int getChildType();
     int getSiblingType();
+    int getChildCount();
 
 private:
     QString cardText;   // main text of the card
