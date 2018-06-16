@@ -11,7 +11,7 @@
 #include <QQuickView>
 
 #include "cardmodel.h"
-#include "cardmodelvector.h"
+#include "cardvector.h"
 #include "spacercard.h"
 
 int main(int argc, char *argv[])
@@ -25,23 +25,10 @@ int main(int argc, char *argv[])
     QFile file("/home/riley/Documents/Writing Tool Sample XML/Generic Sample.txt");
 
     // The CardModelVector object needs to have a reference to the file so it can read and write
-    CardModelVector* cardModelVector = new CardModelVector(&file);
+    CardVector* cardVector = new CardVector(&file);
 
-    // Get a subset of the models to display
-//    CardModel* model_1 = cardModelVector->getCardModel(1);
-//    CardModel* model_2 = cardModelVector->getCardModel(2);
-//    CardModel* model_3 = cardModelVector->getCardModel(3);
-
-    // Create the headers model
-//    QVector<QString*>* headersVector = new QVector
-
-    // Link the models
-//    context->setContextProperty("cardModel_1", model_1);
-//    context->setContextProperty("cardModel_2", model_2);
-//    context->setContextProperty("cardModel_3", model_3);
-
-    CardModelVector* flatModel = cardModelVector->flattenModel();
-    context->setContextProperty("gridModel", flatModel->getCardModel(0));
+    CardModel* flatModel = new CardModel(cardVector);
+    context->setContextProperty("gridModel", flatModel);
     flatModel->setCardFile(&file);
 
     engine.load(QUrl(QStringLiteral("qrc:/main.qml")));

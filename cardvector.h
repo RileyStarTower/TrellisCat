@@ -9,7 +9,6 @@
 #include <QQmlContext>
 #include <QQmlApplicationEngine>
 
-#include "cardmodel.h"
 #include "spacercard.h"
 
 /**
@@ -21,36 +20,31 @@
  * This class also has methods for file IO, and finding
  * indexes for a given Card.
  */
-class CardModelVector : public QObject
+class CardVector : public QObject
 {
     Q_OBJECT
 public:
-    CardModelVector(QFile* cardFile);
-    CardModelVector();
+    CardVector(QFile* cardFile);
+    CardVector();
 
-    void addModel(CardModel model);
+    void addColumn(QVector<Card*>* column);
     void addCard(Card* card, int modelIndex);
     void addBodyText(Card* card, Card* parent);
-    CardModel* getCardModel(int index);
-    void connectModels(QQmlContext* context);
+    QVector<Card*>* getColumn(int index);
     Card* getRoot();
-
-    CardModel* getContainingModel(Card card);
-
-    CardModelVector* flattenModel();
-
-    // TODO: figure out a better solution than this
     void setCardFile(QFile* cardFile) { this->cardFile = cardFile; }
+    int vectorSize();                       // returns the size of the underlying vectors (which are the same after adding spacers)
+    int getColumnCount() { return cardVector.size(); }
+    int getCardIndex(Card* card);
 
 public slots:
     void writeAllCards();
 
 private:
-    QVector<CardModel*> cardModelVector;    // internal vector
+    QVector<QVector<Card*>*> cardVector;    // internal vector
     QVector<Card*> bodyTextVector;          // vector of body text, which needs to be stored separately from the regular cards
     QFile* cardFile;                        // we can keep the file so we can write to it as changes occur
 
-    int vectorSize();                       // returns the size of the underlying vectors (which are the same after adding spacers)
 
     void readAllCards();                    // reads all cards from a given file QFile* cardFile
     void addSpacers(Card* root);            // adds spacers to the tree of Cards, so the tree structure is preserved in the list models

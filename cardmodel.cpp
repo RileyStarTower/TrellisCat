@@ -4,6 +4,17 @@
 
 CardModel::CardModel() : QAbstractListModel() {}
 
+CardModel::CardModel(CardVector* cardVector2D) : QAbstractListModel()
+{
+    this->cardVector2D = cardVector2D;
+    for (int i = 0; i < cardVector2D->vectorSize(); i++) {
+        for (int j = 1; j < cardVector2D->getColumnCount(); j++) {
+            QVector<Card*>* column = cardVector2D->getColumn(j);
+            appendCard(column->at(i));
+        }
+    }
+}
+
 // just returns the number of Cards in the vector
 int CardModel::rowCount(const QModelIndex &parent) const
 {
@@ -23,7 +34,13 @@ QVariant CardModel::data(const QModelIndex &index, int role) const
     case SiblingTypeRole : return cardVector.at(index.row())->getSiblingType();
     case ChildCount : return cardVector.at(index.row())->getChildCount();
     case ColumnCount : return 3; // TODO: don't hard code it
-    case PrevSiblings: return cardVector.at(index.row())->getPrevSiblingCount();
+    case BacktabSearch : return backtabSearch(cardVector.at(index.row()));
+    case PrevSiblings: {
+        // if it's in the top row, don't move
+        if (index.row() < 3) return 0; // TODO: don't hard code the column count
+        // otherwise, calculate how many spacers we need to move over
+        else return cardVector.at(index.row())->getPrevSiblingCount();
+    }
     default : return "Error";
     }
 }
@@ -36,6 +53,7 @@ bool CardModel::setData(const QModelIndex &index, const QVariant &value, int rol
         int row = index.row();
         Card* card = cardVector.at(row);
         bool ret = card->setCardText(value);
+//        todo: write all cards
         emit dataChanged(index, index);
 
         return ret;
@@ -77,6 +95,7 @@ QHash<int, QByteArray> CardModel::roleNames() const
     roles[ChildCount]       = "childCount";
     roles[ColumnCount]      = "columnCount";
     roles[PrevSiblings]     = "prevSiblings";
+    roles[BacktabSearch]    = "backtabSearch";
     return roles;
 }
 
@@ -116,17 +135,6 @@ bool CardModel::appendCard(Card *card)
     return true;
 }
 
-bool CardModel::insertSpacer(SpacerCard *spacer, Card *sibling)
-{
-    int spacerIndex = cardVector.indexOf(sibling) + 1;
-    if (spacerIndex < cardVector.size()) {
-        cardVector.insert(spacerIndex, spacer);
-    } else {
-        cardVector.append(spacer);
-    }
-    return true;
-}
-
 Card* CardModel::getRoot()
 {
     return cardVector.at(0);
@@ -140,6 +148,18 @@ int CardModel::size()
 Card* CardModel::at(int index)
 {
     return cardVector.at(index);
+}
+
+int CardModel::backtabSearch(Card* start) const
+{
+    if (start->getLevel() == 1) {
+        // can't go farther left than this
+        return 0;
+    }
+    // find the index of the parent, take the difference in indices
+    int startIndex = cardVector.indexOf(start);
+    int parentIndex = cardVector.indexOf(start->getParent());
+    return startIndex - parentIndex;
 }
 
 

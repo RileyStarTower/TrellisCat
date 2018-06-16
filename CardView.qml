@@ -18,6 +18,14 @@ RowLayout {
         if (count < 1) { count = 1 }
         cardGrid.currentIndex = index - (count * columnCount)
     }
+    Keys.onTabPressed: {
+        var count = childCount
+        if (count > 0) { cardGrid.currentIndex = index + 1 }
+    }
+    Keys.onBacktabPressed: {
+        cardGrid.currentIndex = index - backtabSearch
+    }
+
     onFocusChanged: {
         if (focus == true) {
             cardEdit.forceActiveFocus()

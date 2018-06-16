@@ -54,6 +54,8 @@ public:
 private:
     QString cardText;   // main text of the card
     QVector<Card*> bodyTextList;
+    Card* getPrevCardChild(int index);
+    int findIndex();
 
 protected:
     int cardType;

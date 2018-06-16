@@ -8,9 +8,11 @@
 #include <QByteArray>
 #include <QVector>
 #include <QString>
+#include <QFile>
 
 #include "card.h"
 #include "spacercard.h"
+#include "cardvector.h"
 
 /**
  * @brief A single column of Cards
@@ -36,10 +38,12 @@ public:
         SiblingTypeRole,
         ChildCount,
         ColumnCount,
-        PrevSiblings
+        PrevSiblings,
+        BacktabSearch
     };
 
     CardModel();
+    CardModel(CardVector* cardVector2D);
 
     int rowCount(const QModelIndex &parent) const;
     QVariant data(const QModelIndex &index, int role) const;
@@ -53,14 +57,18 @@ public:
 
     // custom methods
     bool appendCard(Card* card);
-    bool insertSpacer(SpacerCard* spacer, Card* sibling);
     Card* getRoot();
     int size();
     Card* at(int index);
+    void setCardFile(QFile* cardFile) { this->cardFile = cardFile; }
 
 private:
     QVector<Card*> cardVector;
+    CardVector* cardVector2D;
     QString header;
+    QFile* cardFile;
+
+    int backtabSearch(Card* start) const;
 
 };
 

@@ -1,8 +1,6 @@
-#include <QtDebug>
+#include "cardvector.h"
 
-#include "cardmodelvector.h"
-
-CardModelVector::CardModelVector(QFile* cardFile)
+CardVector::CardVector(QFile* cardFile)
     : QObject()
 {
     this->cardFile = cardFile;
@@ -10,50 +8,42 @@ CardModelVector::CardModelVector(QFile* cardFile)
     addSpacers(getRoot());
 }
 
-CardModelVector::CardModelVector() : QObject()
+CardVector::CardVector() : QObject()
 {
 
 }
 
-void CardModelVector::addModel(CardModel model)
+void CardVector::addColumn(QVector<Card*>* column)
 {
-    cardModelVector.append(&model);
+    cardVector.append(column);
 }
 
-void CardModelVector::addCard(Card* card, int modelIndex)
+void CardVector::addCard(Card* card, int columnIndex)
 {
-    if (modelIndex >= cardModelVector.size()) {
-        CardModel* newModel = new CardModel();
-        cardModelVector.append(newModel);
-        QObject::connect(newModel, &QAbstractItemModel::dataChanged, this, &CardModelVector::writeAllCards);
+    if (columnIndex >= cardVector.size()) {
+        QVector<Card*>* newColumn = new QVector<Card*>();
+        cardVector.append(newColumn);
+//        QObject::connect(newColumn, &QAbstractItemModel::dataChanged, this, &CardVector::writeAllCards);
     }
-    CardModel* model = cardModelVector.at(modelIndex); // TODO: could be optimized when adding a new model
-    model->appendCard(card);
+    QVector<Card*>* column = cardVector.at(columnIndex); // TODO: could be optimized when adding a new model
+    column->append(card);
 }
 
-void CardModelVector::addBodyText(Card* card, Card* parent)
+void CardVector::addBodyText(Card* card, Card* parent)
 {
     bodyTextVector.append(card);
     parent->addBodyText(card);
 }
 
 // TODO: Add error handling, this is dangerous
-CardModel* CardModelVector::getCardModel(int index)
+QVector<Card*>* CardVector::getColumn(int index)
 {
-    return cardModelVector.at(index);
+    return cardVector.at(index);
 }
 
-void CardModelVector::connectModels(QQmlContext* context)
+Card* CardVector::getRoot()
 {
-    int i = 0;
-    for (CardModel* model : cardModelVector) {
-        context->setContextProperty("row" + i++, model);
-    }
-}
-
-Card* CardModelVector::getRoot()
-{
-    Card* root = cardModelVector.at(0)->getRoot();
+    Card* root = cardVector.at(0)->at(0);
     while (root->getLevel() > 0) {
         root = root->getParent();
     }
@@ -61,31 +51,8 @@ Card* CardModelVector::getRoot()
     return root;
 }
 
-// returns the CardModel object for the given card
-CardModel* CardModelVector::getContainingModel(Card card)
-{
-    int level = card.getLevel();    // the level corresponds to the index of the internal vector
-    // TODO: validate the index:
-    // if (level < cardModelVector.size())
-    return cardModelVector.at(level);
-}
-
-CardModelVector* CardModelVector::flattenModel()
-{
-    CardModelVector* flatModel = new CardModelVector();
-    for (int i = 0; i < vectorSize(); i++) {
-//        for (CardModel* model : cardModelVector) {
-        for (int j = 1; j < cardModelVector.size(); j++) {
-            CardModel* model = cardModelVector.at(j);
-            flatModel->addCard(model->at(i), 0);
-        }
-    }
-
-    return flatModel;
-}
-
 // populates the internal vector with a series of CardModels based on the given file
-void CardModelVector::readAllCards()
+void CardVector::readAllCards()
 {
     // validate the file
     if (!cardFile->open(QIODevice::ReadOnly | QIODevice::Text)) return; // TODO: add error handling
@@ -117,7 +84,7 @@ void CardModelVector::readAllCards()
 }
 
 // DFS through tree, and add spacers to fill out a grid
-void CardModelVector::addSpacers(Card* root)
+void CardVector::addSpacers(Card* root)
 {
     // TODO: spacers are added to end of parent's child list instead of being inserted. Is that a problem?
 
@@ -126,7 +93,7 @@ void CardModelVector::addSpacers(Card* root)
         for (Card* child : root->getChildList()) {
             addSpacers(child);
         }
-    } else if (root->getChildList().size() < 1 && root->getLevel() < (cardModelVector.size() - 1)) {
+    } else if (root->getChildList().size() < 1 && root->getLevel() < (cardVector.size() - 1)) {
         // leaf node that isn't in the last column, add fillers out to the last column
         SpacerCard* temp;
         Card* parent = root;
@@ -134,7 +101,7 @@ void CardModelVector::addSpacers(Card* root)
             temp = new SpacerCard(parent, parent->getLevel() + 1);
             addCard(temp, temp->getLevel());
             parent = temp;
-        } while (temp->getLevel() < cardModelVector.size());
+        } while (temp->getLevel() < cardVector.size() - 1);
     } else if (root->getChildList().size() > 1) {
         // more than one child means we need to add spacers for all the additional children
 
@@ -155,13 +122,19 @@ void CardModelVector::addSpacers(Card* root)
 }
 
 // sibling is the immediate sibling, i.e. the spacer goes immediately after the sibling
-void CardModelVector::insertSpacer(SpacerCard* spacer, int modelIndex, Card* sibling) {
-    // TODO: error handling for out-of-bounds errors on modelIndex, which should never occur
-    CardModel* model = cardModelVector.at(modelIndex);
-    model->insertSpacer(spacer, sibling);
+void CardVector::insertSpacer(SpacerCard* spacer, int columnIndex, Card* sibling) {
+    // TODO: error handling for out-of-bounds errors on columnIndex, which should never occur
+    QVector<Card*>* column = cardVector.at(columnIndex);
+//    column->insertSpacer(spacer, sibling);
+    int spacerIndex = column->indexOf(sibling) + 1;
+    if (spacerIndex < column->size()) {
+        column->insert(spacerIndex, spacer);
+    } else {
+        column->append(spacer);
+    }
 }
 
-void CardModelVector::writeAllCards()
+void CardVector::writeAllCards()
 {
     if (!cardFile->open(QIODevice::WriteOnly | QIODevice::Text)) return; // TODO: add error handling
 
@@ -173,13 +146,18 @@ void CardModelVector::writeAllCards()
     cardFile->close();
 }
 
-int CardModelVector::vectorSize()
+int CardVector::vectorSize()
 {
     // use vector 1 because vector 0 ends up being empty
-    return cardModelVector.at(1)->size();
+    return cardVector.at(1)->size();
 }
 
-void CardModelVector::writeAllChildCards(Card* root, QTextStream* out)
+int CardVector::getCardIndex(Card* card)
+{
+    return cardVector.at(card->getLevel())->indexOf(card);
+}
+
+void CardVector::writeAllChildCards(Card* root, QTextStream* out)
 {
     // TODO: don't use hard coded type values
     if (root->getCardType() == 1) {

@@ -112,31 +112,53 @@ bool Card::isSibling(Card* sibling)
     }
 }
 
+// TODO: rename this, it's not very descriptive
+
+/************************************
+ * OK, SO, WE'RE KEEPING THAT 2D VECTOR, RIGHT?
+ * LET'S JUST LOOK UP THE PREVIOUS CARD IN THAT VECTOR!
+ * LIKE, WE KNOW WHAT LIST THE CARD IS IN, SO WE CAN JUST GO BACK UP THAT LIST!
+ ************************************
+ */
 int Card::getPrevSiblingCount()
 {
-    // TODO: refactor so that we don't have copied code
-    if (parent->getChildList().indexOf(this) > 0) {
+    if (findIndex() > 0) {
         // if it's not the first child, find the previous Card sibling
-        int index = parent->getChildList().indexOf(this) - 1;
-        Card* temp = parent->getChildList().at(index);
-        while (temp->getCardType() != 1) {
-            index--;
-            temp = parent->getChildList().at(index);
-        }
+        int index = findIndex() - 1;
+        Card* temp;
+        temp = parent->getPrevCardChild(index);
         return temp->getChildCount();
     } else {
-        // if it's the first child, find the last Card child in the previous subtree
-        //Card* tempParent = parent->getPrevSiblingCount(); // oh no, it's recursive
-        // TODO: THIs is broken. We need to get the parent's previous sibling here, but we can't do that recursively now
-//        int index = tempParent->getChildCount() - 1;
-//        Card* temp = tempParent->getChildList().at(index);
-//        while (temp->getCardType() != 1) {
-//            index --;
-//            temp = tempParent->getChildList().at(index);
+        // otherwise, find the previous parent, and use their last Card child
+        Card* tempParent = parent->getParent()->getPrevCardChild(parent->findIndex() - 1);
+//        while (tempParent->findIndex() == 0) {
+//            // if the parent is also a first child, keep going up
+//            tempParent = tempParent->getParent();
 //        }
-//        return temp->getChildCount();
-        return 0;
+        Card* temp = tempParent->getPrevCardChild(tempParent->getChildCount() - 1);
+        while (temp->getLevel() < level) {
+            // if we went up, we have to come back down
+            temp = getPrevCardChild(temp->getChildCount() - 1);
+        }
+        return temp->getChildCount();
     }
+}
+
+/* This function does not validate the child list
+ * if there are no Cards in the list, it will hit an index out of bounds
+ * you must validate the list before calling this function
+ */
+Card* Card::getPrevCardChild(int index) {
+    // loop until we find a Card instead of a spacer
+    while (childList.at(index)->getCardType() != 1) {
+        index--;
+    }
+    return childList.at(index);
+}
+
+int Card::findIndex()
+{
+    return parent->getChildList().indexOf(this);
 }
 
 // Basically a setter, we're just adding new text to the card

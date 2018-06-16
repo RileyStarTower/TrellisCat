@@ -5,8 +5,8 @@ CONFIG += c++11
 SOURCES += main.cpp \
     card.cpp \
     cardmodel.cpp \
-    cardmodelvector.cpp \
-    spacercard.cpp
+    spacercard.cpp \
+    cardvector.cpp
 
 RESOURCES += qml.qrc
 
@@ -35,5 +35,5 @@ else: unix:!android: target.path = /opt/$${TARGET}/bin
 HEADERS += \
     card.h \
     cardmodel.h \
-    cardmodelvector.h \
-    spacercard.h
+    spacercard.h \
+    cardvector.h
