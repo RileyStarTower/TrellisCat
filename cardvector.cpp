@@ -23,10 +23,15 @@ void CardVector::addCard(Card* card, int columnIndex)
     if (columnIndex >= cardVector.size()) {
         QVector<Card*>* newColumn = new QVector<Card*>();
         cardVector.append(newColumn);
-//        QObject::connect(newColumn, &QAbstractItemModel::dataChanged, this, &CardVector::writeAllCards);
     }
     QVector<Card*>* column = cardVector.at(columnIndex); // TODO: could be optimized when adding a new model
     column->append(card);
+}
+
+void CardVector::insertCard(Card* card, int columnIndex, int cardIndex)
+{
+    QVector<Card*>* column = cardVector.at(columnIndex);
+    column->insert(cardIndex, card);
 }
 
 void CardVector::addBodyText(Card* card, Card* parent)
@@ -99,7 +104,7 @@ void CardVector::addSpacers(Card* root)
         Card* parent = root;
         do {
             temp = new SpacerCard(parent, parent->getLevel() + 1);
-            addCard(temp, temp->getLevel());
+            insertCard(temp, temp->getLevel(), getCardIndex(parent));
             parent = temp;
         } while (temp->getLevel() < cardVector.size() - 1);
     } else if (root->getChildList().size() > 1) {
@@ -122,7 +127,8 @@ void CardVector::addSpacers(Card* root)
 }
 
 // sibling is the immediate sibling, i.e. the spacer goes immediately after the sibling
-void CardVector::insertSpacer(SpacerCard* spacer, int columnIndex, Card* sibling) {
+void CardVector::insertSpacer(SpacerCard* spacer, int columnIndex, Card* sibling)
+{
     // TODO: error handling for out-of-bounds errors on columnIndex, which should never occur
     QVector<Card*>* column = cardVector.at(columnIndex);
 //    column->insertSpacer(spacer, sibling);
@@ -131,6 +137,27 @@ void CardVector::insertSpacer(SpacerCard* spacer, int columnIndex, Card* sibling
         column->insert(spacerIndex, spacer);
     } else {
         column->append(spacer);
+    }
+}
+
+void CardVector::updateSpacers(Card* start)
+{
+    // add child spacers to the card we just added
+    // TODO: encapsulate this so addSpacers can reuse it
+    Card* parent = start;
+    SpacerCard* temp;
+    for (int i = start->getLevel(); i < cardVector.size() - 1; i++) {
+        temp = new SpacerCard(parent, parent->getLevel() + 1);
+        insertCard(temp, temp->getLevel(), getCardIndex(start));
+        parent = temp;
+    }
+
+    // add spacers to all parents
+    parent = start->getParent();
+    while (parent->getLevel() > 0) {
+        SpacerCard* temp = new SpacerCard(parent->getParent(), parent->getLevel(), parent);
+        insertSpacer(temp, parent->getLevel(), parent);
+        parent = parent->getParent();
     }
 }
 
@@ -181,24 +208,3 @@ void CardVector::writeAllChildCards(Card* root, QTextStream* out)
         }
     }
 }
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-

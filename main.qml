@@ -12,6 +12,8 @@ ApplicationWindow {
     title: qsTr("TrellisCat")
     color: "#160732"
 
+    signal addChild(int index)
+
     GridView {
         id: cardGrid
         model: gridModel
@@ -22,7 +24,12 @@ ApplicationWindow {
         cellWidth: 400
         delegate: CardView {}
         highlight: Rectangle { color: "lightsteelblue"; radius: 5 }
+        Keys.onPressed: {
+            if ((event.key === Qt.Key_Right) && (event.modifiers & Qt.ControlModifier))
+                addChild(currentIndex)
+        }
     }
+
 
 //    RowLayout {
 //        // use small x and y values so the lists are shoved all the way into the corner

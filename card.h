@@ -16,8 +16,10 @@
 class Card
 {
 public:
-    // constructor takes in one line from the file
+    // main constructor takes in one line from the file
     Card(QString fileLine);
+    // additional constructor for adding new Cards
+    Card(int level, Card* parent);
     // we also need a blank constructor
     Card();
 
@@ -30,9 +32,11 @@ public:
     void addChild(Card* child);
     void insertChild(int index, Card* child);
     void removeChild(Card* child);
+    void removeChild(int index);
     Card* getLastChild();
     Card* resolveParent(Card* parent, int childLevel);
     bool isSibling(Card* sibling);
+    bool hasCards();
 
     // getters and setters
     int getLevel() const {return level;}

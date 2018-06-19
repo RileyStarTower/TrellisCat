@@ -2,13 +2,14 @@
 #include <QQmlApplicationEngine>
 #include <QQmlContext>
 #include <QFile>
-
-//TODO: remove
-#include <QtDebug>
-
 #include <QVector>
 #include <QListView>
 #include <QQuickView>
+#include <QObject>
+#include <QQuickWindow>
+
+//TODO: remove
+#include <QtDebug>
 
 #include "cardmodel.h"
 #include "cardvector.h"
@@ -22,7 +23,7 @@ int main(int argc, char *argv[])
     QQmlContext* context = engine.rootContext();
 
     // TODO: add file selection
-    QFile file("/home/riley/Documents/Writing Tool Sample XML/Generic Sample.txt");
+    QFile file("/home/riley/Documents/Writing Tool Sample XML/Generic Sample (copy 1).🐱");
 
     // The CardModelVector object needs to have a reference to the file so it can read and write
     CardVector* cardVector = new CardVector(&file);
@@ -32,5 +33,10 @@ int main(int argc, char *argv[])
     flatModel->setCardFile(&file);
 
     engine.load(QUrl(QStringLiteral("qrc:/main.qml")));
+
+    QObject* topLevel = engine.rootObjects().value(0);
+    QQuickWindow* appWindow = qobject_cast<QQuickWindow*>(topLevel);
+    QObject::connect(appWindow, SIGNAL(addChild(int)), flatModel, SLOT(addChild(int)));
+
     return app.exec();
 }

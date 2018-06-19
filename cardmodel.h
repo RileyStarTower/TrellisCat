@@ -39,7 +39,8 @@ public:
         ChildCount,
         ColumnCount,
         PrevSiblings,
-        BacktabSearch
+        BacktabSearch,
+        AddChild
     };
 
     CardModel();
@@ -61,6 +62,9 @@ public:
     int size();
     Card* at(int index);
     void setCardFile(QFile* cardFile) { this->cardFile = cardFile; }
+
+public slots:
+    void addChild(int index);
 
 private:
     QVector<Card*> cardVector;

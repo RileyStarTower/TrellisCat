@@ -13,6 +13,7 @@ CardModel::CardModel(CardVector* cardVector2D) : QAbstractListModel()
             appendCard(column->at(i));
         }
     }
+    QObject::connect(this, &QAbstractItemModel::dataChanged, cardVector2D, &CardVector::writeAllCards);
 }
 
 // just returns the number of Cards in the vector
@@ -33,11 +34,11 @@ QVariant CardModel::data(const QModelIndex &index, int role) const
     case ChildTypeRole : return cardVector.at(index.row())->getChildType();
     case SiblingTypeRole : return cardVector.at(index.row())->getSiblingType();
     case ChildCount : return cardVector.at(index.row())->getChildCount();
-    case ColumnCount : return 3; // TODO: don't hard code it
+    case ColumnCount : return cardVector2D->getColumnCount(); // TODO: don't hard code it
     case BacktabSearch : return backtabSearch(cardVector.at(index.row()));
     case PrevSiblings: {
         // if it's in the top row, don't move
-        if (index.row() < 3) return 0; // TODO: don't hard code the column count
+        if (index.row() < cardVector2D->getColumnCount()) return 0; // TODO: don't hard code the column count
         // otherwise, calculate how many spacers we need to move over
         else return cardVector.at(index.row())->getPrevSiblingCount();
     }
@@ -96,6 +97,7 @@ QHash<int, QByteArray> CardModel::roleNames() const
     roles[ColumnCount]      = "columnCount";
     roles[PrevSiblings]     = "prevSiblings";
     roles[BacktabSearch]    = "backtabSearch";
+    roles[AddChild]         = "addChild";
     return roles;
 }
 
@@ -150,6 +152,41 @@ Card* CardModel::at(int index)
     return cardVector.at(index);
 }
 
+void CardModel::addChild(int index)
+{
+    // add a child to the Card
+    Card* parent = cardVector.at(index);
+    Card* child = new Card(parent->getLevel() + 1, parent);
+    if (parent->hasCards()) {
+        parent->insertChild(0, child);
+    } else {
+        // if the parent has no Cards, remove the spacer and add the new one
+        parent->removeChild(0);
+        parent->addChild(child);
+    }
+
+    // update the underlying 2D vector
+    cardVector2D->insertCard(child, child->getLevel(), index);
+    cardVector2D->updateSpacers(child);
+
+    // update the flattened model
+    // TODO: do this directly instead of rebuilding the whole thing
+    int count = cardVector2D->getColumnCount() * cardVector2D->vectorSize();
+    beginRemoveRows(QModelIndex(), 0, count);
+    cardVector.clear();
+    endRemoveRows();
+
+    beginInsertRows(QModelIndex(), 0, count);
+    for (int i = 0; i < cardVector2D->vectorSize(); i++) {
+        for (int j = 1; j < cardVector2D->getColumnCount(); j++) {
+            QVector<Card*>* column = cardVector2D->getColumn(j);
+            appendCard(column->at(i));
+        }
+    }
+    endInsertRows();
+//    emit dataChanged(QAbstractListModel::index(0), QAbstractListModel::index(cardVector.size() - 1));
+}
+
 int CardModel::backtabSearch(Card* start) const
 {
     if (start->getLevel() == 1) {
@@ -161,33 +198,3 @@ int CardModel::backtabSearch(Card* start) const
     int parentIndex = cardVector.indexOf(start->getParent());
     return startIndex - parentIndex;
 }
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-

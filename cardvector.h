@@ -28,7 +28,8 @@ public:
     CardVector();
 
     void addColumn(QVector<Card*>* column);
-    void addCard(Card* card, int modelIndex);
+    void addCard(Card* card, int columnIndex);
+    void insertCard(Card* card, int columnIndex, int cardIndex);
     void addBodyText(Card* card, Card* parent);
     QVector<Card*>* getColumn(int index);
     Card* getRoot();
@@ -36,6 +37,7 @@ public:
     int vectorSize();                       // returns the size of the underlying vectors (which are the same after adding spacers)
     int getColumnCount() { return cardVector.size(); }
     int getCardIndex(Card* card);
+    void updateSpacers(Card* start);        // adds new spacers when we add new cards
 
 public slots:
     void writeAllCards();
@@ -46,8 +48,8 @@ private:
     QFile* cardFile;                        // we can keep the file so we can write to it as changes occur
 
 
-    void readAllCards();                    // reads all cards from a given file QFile* cardFile
-    void addSpacers(Card* root);            // adds spacers to the tree of Cards, so the tree structure is preserved in the list models
+    void readAllCards();                                    // reads all cards from a given file QFile* cardFile
+    void addSpacers(Card* root);                            // adds spacers to the tree of Cards, so the tree structure is preserved in the list models
     void insertSpacer(SpacerCard* spacer, int modelIndex, Card* sibling);
     void writeAllChildCards(Card* root, QTextStream *out);  // recursive method to write all cards to file
 };

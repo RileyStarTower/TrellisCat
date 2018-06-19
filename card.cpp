@@ -16,6 +16,14 @@ Card::Card(QString fileLine)
     cardType = 1;
 }
 
+Card::Card(int level, Card* parent)
+{
+    this->level = level;
+    this->parent = parent;
+    cardText = "";
+    cardType = 1;
+}
+
 // Constructor with no input, just initialize everything
 Card::Card()
 {
@@ -53,6 +61,11 @@ void Card::insertChild(int index, Card* child)
 void Card::removeChild(Card* child)
 {
     childList.remove(childList.indexOf(child));
+}
+
+void Card::removeChild(int index)
+{
+    childList.remove(index);
 }
 
 // Return the child at the end of the card's child list
@@ -110,6 +123,12 @@ bool Card::isSibling(Card* sibling)
     } else {
         return false;
     }
+}
+
+bool Card::hasCards()
+{
+    // just check the first child, since Spacers go after Cards
+    return (childList.at(0)->getCardType() == 1);
 }
 
 // TODO: rename this, it's not very descriptive
@@ -209,25 +228,3 @@ QString Card::getFileText()
     QString fileText = QString::number(getLevel()) + "|" + cardText;
     return fileText;
 }
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
