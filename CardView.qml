@@ -1,5 +1,5 @@
 import QtQuick 2.7
-import QtQuick.Controls 2.0
+import QtQuick.Controls 2.1
 import QtQuick.Layouts 1.1
 import QtGraphicalEffects 1.0
 
@@ -8,29 +8,42 @@ RowLayout {
     width: 400; height: 105
     // intercept key presses to adjust navigation to skip spacers
     Keys.onDownPressed: {
-        // update index using flattened model math
-        var count = childCount
-        if (count < 1) { count = 1 } // this accounts for leaf nodes
-        cardGrid.currentIndex = index + (count * columnCount)
+        cardGrid.currentIndex = index + moveDown
     }
     Keys.onUpPressed: {
-        var count = prevSiblings
-        if (count < 1) { count = 1 }
-        cardGrid.currentIndex = index - (count * columnCount)
+        cardGrid.currentIndex = index + moveUp
     }
+    // can't use this if we're using Ctrl+Right for new child card
+//    Keys.onRightPressed: {
+//        cardGrid.currentIndex = index + moveRight
+//    }
+//    Keys.onLeftPressed: {
+//        cardGrid.currentIndex = index + moveLeft
+//    }
     Keys.onTabPressed: {
-        var count = childCount
-        if (count > 0) { cardGrid.currentIndex = index + 1 }
+        cardGrid.currentIndex = index + moveRight
     }
     Keys.onBacktabPressed: {
-        cardGrid.currentIndex = index - backtabSearch
+        cardGrid.currentIndex = index + moveLeft
     }
+
+    // TODO: add page up and page down navigation
 
     onFocusChanged: {
         if (focus == true) {
-            cardEdit.forceActiveFocus()
+            cardDisplay.forceActiveFocus()
         }
     }
+
+//    Keys.onReturnPressed: {
+//        cardEdit.visible = !cardEdit.visible
+//    }
+//    Keys.onEnterPressed: {
+//        cardEdit.visible = !cardEdit.visible
+//    }
+//    Keys.onEscapePressed: {
+//        cardEdit.visible = false
+//    }
 
     // The horizontal connector from a child Card to the parent list
     Rectangle {
@@ -129,7 +142,7 @@ RowLayout {
         clip: true
 
         TextInput {
-            id: cardEdit
+            id: cardDisplay
             color: "#dddddd"
             text: cardText
             focus: true
@@ -164,7 +177,7 @@ RowLayout {
                 name: "card"
                 when: cardType == 1
                 PropertyChanges {
-                    target: cardEdit
+                    target: cardDisplay
                     visible: true
                 }
                 PropertyChanges {
@@ -181,12 +194,13 @@ RowLayout {
                 name: "spacer"
                 when: cardType == 2
                 PropertyChanges {
-                    target: cardEdit
+                    target: cardDisplay
                     visible: false
                 }
                 PropertyChanges {
                     target: cardBox
-                    color: "#160732"
+//                    color: "#160732"
+                    color: "#1607a2"
                 }
                 PropertyChanges {
                     target: shadow

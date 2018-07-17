@@ -20,18 +20,40 @@ void CardVector::addColumn(QVector<Card*>* column)
 
 void CardVector::addCard(Card* card, int columnIndex)
 {
-    if (columnIndex >= cardVector.size()) {
-        QVector<Card*>* newColumn = new QVector<Card*>();
-        cardVector.append(newColumn);
-    }
+    addColumnIfNeeded(columnIndex);
     QVector<Card*>* column = cardVector.at(columnIndex); // TODO: could be optimized when adding a new model
     column->append(card);
 }
 
+void CardVector::addColumnIfNeeded(int columnIndex)
+{
+    if (columnIndex >= cardVector.size()) {
+        QVector<Card*>* newColumn = new QVector<Card*>();
+        cardVector.append(newColumn);
+    }
+}
+
 void CardVector::insertCard(Card* card, int columnIndex, int cardIndex)
 {
-    QVector<Card*>* column = cardVector.at(columnIndex);
-    column->insert(cardIndex, card);
+    addColumnIfNeeded(columnIndex);
+    if (cardIndex < cardVector.at(columnIndex)->size()) {
+        // if we already have enough Cards in the column, just insert the card where it needs to go
+        QVector<Card*>* column = cardVector.at(columnIndex);
+        column->insert(cardIndex, card);
+    } else {
+        // add spacers everywhere except where the new Card goes
+        QVector<Card*>* column = cardVector.at(columnIndex);
+        QVector<Card*>* parentColumn = cardVector.at(columnIndex - 1);
+        for (int i = 0; i < parentColumn->size(); i++) {
+            if (i == cardIndex) {
+                column->append(card);
+            } else {
+                Card* parent = parentColumn->at(i);
+                SpacerCard* spacer = new SpacerCard(parent, columnIndex);
+                column->append(spacer);
+            }
+        }
+    }
 }
 
 void CardVector::addBodyText(Card* card, Card* parent)
@@ -152,12 +174,14 @@ void CardVector::updateSpacers(Card* start)
         parent = temp;
     }
 
-    // add spacers to all parents
-    parent = start->getParent();
-    while (parent->getLevel() > 0) {
-        SpacerCard* temp = new SpacerCard(parent->getParent(), parent->getLevel(), parent);
-        insertSpacer(temp, parent->getLevel(), parent);
-        parent = parent->getParent();
+    if (start->findIndex() > 0) {
+        // add spacers to all parents, unless the new card is a first child
+        parent = start->getParent();
+        while (parent->getLevel() > 0) {
+            SpacerCard* temp = new SpacerCard(parent->getParent(), parent->getLevel(), parent);
+            insertSpacer(temp, parent->getLevel(), parent);
+            parent = parent->getParent();
+        }
     }
 }
 

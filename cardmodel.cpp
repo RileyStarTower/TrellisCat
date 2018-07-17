@@ -33,15 +33,11 @@ QVariant CardModel::data(const QModelIndex &index, int role) const
     case TypeRole : return cardVector.at(index.row())->getCardType();
     case ChildTypeRole : return cardVector.at(index.row())->getChildType();
     case SiblingTypeRole : return cardVector.at(index.row())->getSiblingType();
-    case ChildCount : return cardVector.at(index.row())->getChildCount();
-    case ColumnCount : return cardVector2D->getColumnCount(); // TODO: don't hard code it
-    case BacktabSearch : return backtabSearch(cardVector.at(index.row()));
-    case PrevSiblings: {
-        // if it's in the top row, don't move
-        if (index.row() < cardVector2D->getColumnCount()) return 0; // TODO: don't hard code the column count
-        // otherwise, calculate how many spacers we need to move over
-        else return cardVector.at(index.row())->getPrevSiblingCount();
-    }
+    case MoveUp : return moveUp(index.row());
+    case MoveDown : return moveDown(index.row());
+    case MoveRight : return moveRight(index.row());
+    case MoveLeft : return moveLeft(index.row());
+    case GridWidth : return cardVector2D->getColumnCount() * 410; // TODO: there's a hard coded thing here...
     default : return "Error";
     }
 }
@@ -93,11 +89,11 @@ QHash<int, QByteArray> CardModel::roleNames() const
     roles[TypeRole]         = "cardType";
     roles[ChildTypeRole]    = "childType";
     roles[SiblingTypeRole]  = "siblingType";
-    roles[ChildCount]       = "childCount";
-    roles[ColumnCount]      = "columnCount";
-    roles[PrevSiblings]     = "prevSiblings";
-    roles[BacktabSearch]    = "backtabSearch";
-    roles[AddChild]         = "addChild";
+    roles[MoveUp]           = "moveUp";
+    roles[MoveDown]         = "moveDown";
+    roles[MoveRight]        = "moveRight";
+    roles[MoveLeft]         = "moveLeft";
+    roles[GridWidth]        = "gridWidth";
     return roles;
 }
 
@@ -152,16 +148,20 @@ Card* CardModel::at(int index)
     return cardVector.at(index);
 }
 
+// called from QML when adding a new child from the GUI
 void CardModel::addChild(int index)
 {
     // add a child to the Card
+//    bool newColumn = (index >= cardVector2D->getColumnCount());
     Card* parent = cardVector.at(index);
     Card* child = new Card(parent->getLevel() + 1, parent);
     if (parent->hasCards()) {
         parent->insertChild(0, child);
     } else {
         // if the parent has no Cards, remove the spacer and add the new one
-        parent->removeChild(0);
+        if (parent->getChildCount() > 0) {
+            parent->removeChild(0);
+        }
         parent->addChild(child);
     }
 
@@ -179,22 +179,71 @@ void CardModel::addChild(int index)
     beginInsertRows(QModelIndex(), 0, count);
     for (int i = 0; i < cardVector2D->vectorSize(); i++) {
         for (int j = 1; j < cardVector2D->getColumnCount(); j++) {
+            // TODO: add a 2D index function so we don't have to get a column each time
             QVector<Card*>* column = cardVector2D->getColumn(j);
             appendCard(column->at(i));
         }
     }
     endInsertRows();
-//    emit dataChanged(QAbstractListModel::index(0), QAbstractListModel::index(cardVector.size() - 1));
+
+    QObject* gridView = appWindow->findChild<QObject*>("cardGrid");
+    gridView->setProperty("width", (cardVector2D->getColumnCount() - 1) * 400);
 }
 
-int CardModel::backtabSearch(Card* start) const
+int CardModel::moveUp(int index) const
 {
-    if (start->getLevel() == 1) {
-        // can't go farther left than this
+    // jump up through the flat vector until we find a Card
+    int jump = cardVector2D->getColumnCount() - 1; // subtract 1 because the first column isn't used in the flat model
+    int count = jump;
+    while (index - count >= 0) {
+        if (cardVector.at(index - count)->getCardType() == 1) {
+            // if we've found a Card, return the current count
+            return count * -1;
+        }
+        // otherwise, jump up again
+        count += jump;
+    }
+    return 0;
+}
+
+int CardModel::moveDown(int index) const
+{
+    // jump down through the flat vector until we find a Card
+    int jump = cardVector2D->getColumnCount() - 1; // subtract 1 because the first column isn't used in the flat model
+    int count = jump;
+    while (index + count < cardVector.size()) {
+        if (cardVector.at(index + count)->getCardType() == 1) {
+            // if we've found a Card, return the current count
+            return count;
+        }
+        // otherwise, jump up again
+        count += jump;
+    }
+    return 0;
+}
+
+int CardModel::moveRight(int index) const
+{
+    // move to the right if there are any Cards there
+    Card* start = cardVector.at(index);
+    if (start->hasCards()) {
+        return 1;
+    } else {
         return 0;
     }
-    // find the index of the parent, take the difference in indices
-    int startIndex = cardVector.indexOf(start);
-    int parentIndex = cardVector.indexOf(start->getParent());
-    return startIndex - parentIndex;
+}
+
+int CardModel::moveLeft(int index) const
+{
+    // if we can't move left, just return 0
+    if (index == 0) { return 0; }
+    // move back through the flat vector until we find the parent
+    Card* start = cardVector.at(index);
+    int count = 1;
+    Card* temp = cardVector.at(index - count);
+    while ((temp != start->getParent()) && ((index - count) >= 0)) {
+        count++;
+        temp = cardVector.at(index - count);
+    }
+    return count * -1;
 }

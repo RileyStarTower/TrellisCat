@@ -7,6 +7,7 @@
 #include <QQuickView>
 #include <QObject>
 #include <QQuickWindow>
+#include <QStandardPaths>
 
 //TODO: remove
 #include <QtDebug>
@@ -23,7 +24,13 @@ int main(int argc, char *argv[])
     QQmlContext* context = engine.rootContext();
 
     // TODO: add file selection
-    QFile file("/home/riley/Documents/Writing Tool Sample XML/Generic Sample (copy 1).🐱");
+    QString docsPath = QStandardPaths::locate(QStandardPaths::DocumentsLocation, "TrellCat Documents", QStandardPaths::LocateDirectory) + "/";// + "/TrellCat Documents/"; //"/home/riley/Documents/TrellCat Documents/";
+    QString fileName = "Basic Template";
+    QString extension = ".tcpro";
+//    QString test = "." + QString::fromUtf8("\xF0\x9F\x90\xB1");
+//    QString extension = ".🐱";
+//    QString extension = "\u1F431";
+    QFile file(docsPath + fileName + extension);
 
     // The CardModelVector object needs to have a reference to the file so it can read and write
     CardVector* cardVector = new CardVector(&file);
@@ -37,6 +44,12 @@ int main(int argc, char *argv[])
     QObject* topLevel = engine.rootObjects().value(0);
     QQuickWindow* appWindow = qobject_cast<QQuickWindow*>(topLevel);
     QObject::connect(appWindow, SIGNAL(addChild(int)), flatModel, SLOT(addChild(int)));
+
+    appWindow->setTitle(fileName + " - TrellCat");
+    // update the width of the GridView
+    QObject* gridView = appWindow->findChild<QObject*>("cardGrid");
+    gridView->setProperty("width", (cardVector->getColumnCount() - 1) * 400);
+    flatModel->setAppWindow(appWindow); // TODO: come up with a more elegant solution
 
     return app.exec();
 }

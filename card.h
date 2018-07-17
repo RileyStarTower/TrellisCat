@@ -44,11 +44,11 @@ public:
     void setParent(Card* parent) {this->parent = parent;}
     Card* getParent() const {return parent;}
     int getCardType() { return cardType; }
-    int getPrevSiblingCount();
 
     void addBodyText(Card* bodyText);
     QVector<Card*> getChildList() const {return childList;}
     QVector<Card*> getBodyTextList() const {return bodyTextList;}
+    int findIndex();
 
     // roles for the Card UI connections
     int getChildType();
@@ -58,8 +58,6 @@ public:
 private:
     QString cardText;   // main text of the card
     QVector<Card*> bodyTextList;
-    Card* getPrevCardChild(int index);
-    int findIndex();
 
 protected:
     int cardType;

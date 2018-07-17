@@ -128,51 +128,11 @@ bool Card::isSibling(Card* sibling)
 bool Card::hasCards()
 {
     // just check the first child, since Spacers go after Cards
-    return (childList.at(0)->getCardType() == 1);
-}
-
-// TODO: rename this, it's not very descriptive
-
-/************************************
- * OK, SO, WE'RE KEEPING THAT 2D VECTOR, RIGHT?
- * LET'S JUST LOOK UP THE PREVIOUS CARD IN THAT VECTOR!
- * LIKE, WE KNOW WHAT LIST THE CARD IS IN, SO WE CAN JUST GO BACK UP THAT LIST!
- ************************************
- */
-int Card::getPrevSiblingCount()
-{
-    if (findIndex() > 0) {
-        // if it's not the first child, find the previous Card sibling
-        int index = findIndex() - 1;
-        Card* temp;
-        temp = parent->getPrevCardChild(index);
-        return temp->getChildCount();
+    if (childList.size() > 0) {
+        return (childList.at(0)->getCardType() == 1);
     } else {
-        // otherwise, find the previous parent, and use their last Card child
-        Card* tempParent = parent->getParent()->getPrevCardChild(parent->findIndex() - 1);
-//        while (tempParent->findIndex() == 0) {
-//            // if the parent is also a first child, keep going up
-//            tempParent = tempParent->getParent();
-//        }
-        Card* temp = tempParent->getPrevCardChild(tempParent->getChildCount() - 1);
-        while (temp->getLevel() < level) {
-            // if we went up, we have to come back down
-            temp = getPrevCardChild(temp->getChildCount() - 1);
-        }
-        return temp->getChildCount();
+        return false;
     }
-}
-
-/* This function does not validate the child list
- * if there are no Cards in the list, it will hit an index out of bounds
- * you must validate the list before calling this function
- */
-Card* Card::getPrevCardChild(int index) {
-    // loop until we find a Card instead of a spacer
-    while (childList.at(index)->getCardType() != 1) {
-        index--;
-    }
-    return childList.at(index);
 }
 
 int Card::findIndex()

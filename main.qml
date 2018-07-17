@@ -1,7 +1,8 @@
 import QtQuick 2.7
-import QtQuick.Controls 2.0
+import QtQuick.Controls 1.4
 import QtQuick.Layouts 1.2
 import QtQuick.Window 2.0
+import QtQuick.Dialogs 1.1
 
 ApplicationWindow {
     id: appWindow
@@ -9,64 +10,66 @@ ApplicationWindow {
     visibility: Window.Maximized
     width: 640
     height: 480
-    title: qsTr("TrellisCat")
+    title: qsTr("TrellCat")
     color: "#160732"
 
     signal addChild(int index)
 
-    GridView {
-        id: cardGrid
-        model: gridModel
-        x: 10; y: 10
-        width: 1300
-        height: parent.height
-        cellHeight: 105
-        cellWidth: 400
-        delegate: CardView {}
-        highlight: Rectangle { color: "lightsteelblue"; radius: 5 }
-        Keys.onPressed: {
-            if ((event.key === Qt.Key_Right) && (event.modifiers & Qt.ControlModifier))
-                addChild(currentIndex)
+    menuBar: MenuBar {
+        Menu {
+            title: "&File"
+            MenuItem {
+                text: "E&xit"
+                shortcut: StandardKey.Quit
+                onTriggered: Qt.quit()
+            }
+            MenuItem {
+                text: "&Open"
+                shortcut: StandardKey.Open
+                onTriggered: fileDialog.open()
+            }
         }
     }
 
+    GridView {
+        id: cardGrid
+        objectName: "cardGrid"
+        model: gridModel
+        x: 10; y: 10
+        width: 400
+        height: contentHeight
+        cellHeight: 105
+        cellWidth: 400
+        delegate: CardView {}
+//        highlight: Rectangle { color: "lightsteelblue"; radius: 5 }
+        Keys.onPressed: {
+            if ((event.key === Qt.Key_Right) && (event.modifiers & Qt.ControlModifier)) {
+                addChild(currentIndex)
+            }
+        }
+    }
 
-//    RowLayout {
-//        // use small x and y values so the lists are shoved all the way into the corner
-//        x: 10; y: 10
-//        CardList {
-//            id: list_1
-//            model: cardModel_1
-//            boundsBehavior: Flickable.StopAtBounds
-//            ScrollBar.vertical: vBar
-//            KeyNavigation.priority: KeyNavigation.BeforeItem
-//            KeyNavigation.tab: list_2
-//        }
-//        CardList {
-//            id: list_2
-//            anchors.left: list_1.right
-//            model: cardModel_2
-//            boundsBehavior: Flickable.StopAtBounds
-//            ScrollBar.vertical: vBar
-//            KeyNavigation.priority: KeyNavigation.BeforeItem
-//            KeyNavigation.tab: list_3
-//            KeyNavigation.backtab: list_1
-//        }
-//        CardList {
-//            id: list_3
-//            anchors.left: list_2.right
-//            model: cardModel_3
-//            boundsBehavior: Flickable.StopAtBounds
-//            ScrollBar.vertical: vBar
-//            KeyNavigation.priority: KeyNavigation.BeforeItem
-//            KeyNavigation.backtab: list_2
-//        }
-//    }
+    FileDialog {
+        id: fileDialog
+        modality: Qt.WindowModal
+        title: "Open"
+        folder: shortcuts.documents + "/TrellCat Documents/"
+        selectExisting: true
+        selectMultiple: false
+        selectFolder: false
+        // , *.🐱
+        nameFilters: [ "TrellCat files (*.tcpro *.🐱)", "All files (*)" ]
+        selectedNameFilter: nameFilters[0]
+        onAccepted: {
+            console.log("Accepted: " + fileUrls)
+            if (fileDialogOpenFiles.checked)
+                for (var i = 0; i < fileUrls.length; ++i)
+                    Qt.openUrlExternally(fileUrls[i])
+        }
+        onRejected: { console.log("Rejected: " + buildExtensions()) }
 
-//    // Scroll bar that syncs up the scrolling of all the lists
-//    ScrollBar {
-//        id: vBar
-//        height: parent.height
-//        anchors.right: parent.right
-//    }
+        function buildExtensions () {
+            return "*.tcpro, *.🐱"
+        }
+    }
 }

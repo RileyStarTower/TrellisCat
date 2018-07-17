@@ -1,6 +1,7 @@
 #ifndef CARDMODEL_H
 #define CARDMODEL_H
 
+#include <QQuickWindow>
 #include <QAbstractListModel>
 #include <QVariant>
 #include <QModelIndex>
@@ -36,11 +37,11 @@ public:
         TypeRole,
         ChildTypeRole,
         SiblingTypeRole,
-        ChildCount,
-        ColumnCount,
-        PrevSiblings,
-        BacktabSearch,
-        AddChild
+        MoveUp,
+        MoveDown,
+        MoveRight,
+        MoveLeft,
+        GridWidth
     };
 
     CardModel();
@@ -62,6 +63,7 @@ public:
     int size();
     Card* at(int index);
     void setCardFile(QFile* cardFile) { this->cardFile = cardFile; }
+    void setAppWindow(QQuickWindow* appWindow) { this->appWindow = appWindow; }
 
 public slots:
     void addChild(int index);
@@ -71,9 +73,13 @@ private:
     CardVector* cardVector2D;
     QString header;
     QFile* cardFile;
+    QQuickWindow* appWindow;
 
-    int backtabSearch(Card* start) const;
-
+    // UI navigation functions
+    int moveUp(int index) const;
+    int moveDown(int index) const;
+    int moveRight(int index) const;
+    int moveLeft(int index) const;
 };
 
 #endif // CARDMODEL_H

@@ -52,6 +52,7 @@ private:
     void addSpacers(Card* root);                            // adds spacers to the tree of Cards, so the tree structure is preserved in the list models
     void insertSpacer(SpacerCard* spacer, int modelIndex, Card* sibling);
     void writeAllChildCards(Card* root, QTextStream *out);  // recursive method to write all cards to file
+    void addColumnIfNeeded(int columnIndex);
 };
 
 #endif // CARDMODELVECTOR_H

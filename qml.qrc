@@ -2,7 +2,7 @@
     <qresource prefix="/">
         <file>main.qml</file>
         <file>qtquickcontrols2.conf</file>
-        <file>CardList.qml</file>
         <file>CardView.qml</file>
+        <file>CardEdit.qml</file>
     </qresource>
 </RCC>
