@@ -33,7 +33,9 @@ public:
     void insertChild(int index, Card* child);
     void removeChild(Card* child);
     void removeChild(int index);
+    Card* getFirstChild();
     Card* getLastChild();
+    Card* getChild(int index);
     Card* resolveParent(Card* parent, int childLevel);
     bool isSibling(Card* sibling);
     bool hasCards();

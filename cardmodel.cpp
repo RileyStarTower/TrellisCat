@@ -16,6 +16,66 @@ CardModel::CardModel(CardVector* cardVector2D) : QAbstractListModel()
     QObject::connect(this, &QAbstractItemModel::dataChanged, cardVector2D, &CardVector::writeAllCards);
 }
 
+CardModel::CardModel(QFile *cardFile) : QAbstractListModel()
+{
+    // validate the file
+    if (!cardFile->open(QIODevice::ReadOnly | QIODevice::Text)) return; // TODO: add error handling
+
+    // initialization
+    QTextStream in(cardFile);
+    Card* parent = new Card(); // the first Card is just the root
+    root = parent;
+    int childLevel = 1;
+    treeDepth = childLevel;
+
+    while (!in.atEnd()) {
+        QString line = in.readLine();
+
+        Card* newCard = new Card(line);
+        parent = newCard->resolveParent(parent, childLevel);
+
+        if (newCard->getLevel() == 1000)
+        {
+            // this Card is just body text, so add it to that vector
+            continue;
+        } else {
+            childLevel = parent->getLevel() + 1;
+            if (childLevel > treeDepth) {
+                treeDepth = childLevel;
+            }
+        }
+    }
+
+//    root->addSpacers();
+    flattenTree(root);
+}
+
+void CardModel::flattenTree(Card* subroot)
+{
+    if (subroot->getLevel() > 0) {
+        cardVector.append(subroot);
+    }
+
+    // pre-order traversal, and fill in spacers if where needed
+    if (subroot->getChildCount() < 1) {
+        addSpacers(treeDepth - subroot->getLevel(), subroot);
+    } else {
+        for (int i = 0; i < subroot->getChildCount(); i++) {
+            if (i > 0) {
+                addSpacers(subroot->getLevel(), subroot);
+            }
+            flattenTree(subroot->getChild(i));
+        }
+    }
+}
+
+void CardModel::addSpacers(int count, Card* parent)
+{
+    for (int i = 0; i < count; i++) {
+        cardVector.append(new SpacerCard(parent));
+    }
+}
+
 // just returns the number of Cards in the vector
 int CardModel::rowCount(const QModelIndex &parent) const
 {
@@ -193,7 +253,8 @@ void CardModel::addChild(int index)
 int CardModel::moveUp(int index) const
 {
     // jump up through the flat vector until we find a Card
-    int jump = cardVector2D->getColumnCount() - 1; // subtract 1 because the first column isn't used in the flat model
+//    int jump = cardVector2D->getColumnCount() - 1; // subtract 1 because the first column isn't used in the flat model
+    int jump = treeDepth;
     int count = jump;
     while (index - count >= 0) {
         if (cardVector.at(index - count)->getCardType() == 1) {
@@ -209,7 +270,8 @@ int CardModel::moveUp(int index) const
 int CardModel::moveDown(int index) const
 {
     // jump down through the flat vector until we find a Card
-    int jump = cardVector2D->getColumnCount() - 1; // subtract 1 because the first column isn't used in the flat model
+//    int jump = cardVector2D->getColumnCount() - 1; // subtract 1 because the first column isn't used in the flat model
+    int jump = treeDepth;
     int count = jump;
     while (index + count < cardVector.size()) {
         if (cardVector.at(index + count)->getCardType() == 1) {

@@ -37,8 +37,8 @@ ApplicationWindow {
         model: gridModel
         x: 10; y: 10
         width: 400
-        height: contentHeight
-        cellHeight: 105
+        height: parent.height
+        cellHeight: 110
         cellWidth: 400
         delegate: CardView {}
 //        highlight: Rectangle { color: "lightsteelblue"; radius: 5 }

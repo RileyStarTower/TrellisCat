@@ -27,11 +27,26 @@ SpacerCard::SpacerCard(Card* parent, int level)
     parent->addChild(this);
 }
 
+// This constructor copies the sibling, and is used when we're using the parent's insert method
+SpacerCard::SpacerCard(Card* parent)
+{
+    cardType = 2;
+    // TODO: I think there's a more compact way of initializing these
+    this->level = parent->getLevel() + 1;
+    this->parent = parent;
+}
+
+// TODO: we'll need to reset this in the add card method
+void SpacerCard::setDisconnected()
+{
+    cardType = 0;
+}
+
 bool SpacerCard::followedByCard()
 {
     // start at the current SpacerCard's next sibling
     int idx = parent->getChildList().indexOf(this) + 1;
-    for (idx; idx < parent->getChildList().size(); idx++) {
+    for (; idx < parent->getChildList().size(); idx++) {
         // if the sibling is a Card instead of a spacer, then return true
         if (parent->getChildList().at(idx)->getCardType() == 1) {
             return true;

@@ -3,7 +3,7 @@ import QtQuick.Controls 2.1
 import QtQuick.Layouts 1.1
 import QtGraphicalEffects 1.0
 
-RowLayout {
+Item {
     id: cardStuff
     width: 400; height: 105
     // intercept key presses to adjust navigation to skip spacers
@@ -50,6 +50,7 @@ RowLayout {
         id: horizontalConnector
         width: 15; height: 5
         anchors.right: cardBox.left
+        anchors.verticalCenter: cardBox.verticalCenter
         color: "#160732"
 
         states: [
@@ -116,7 +117,7 @@ RowLayout {
                 PropertyChanges {
                     target: verticalConnector
                     color: "#dddddd"
-                    height: 105
+                    height: 110
                     anchors.horizontalCenter: horizontalConnector.left
                 }
             },
@@ -199,8 +200,8 @@ RowLayout {
                 }
                 PropertyChanges {
                     target: cardBox
-//                    color: "#160732"
-                    color: "#1607a2"
+                    color: "#160732"
+//                    color: "#1607a2"
                 }
                 PropertyChanges {
                     target: shadow

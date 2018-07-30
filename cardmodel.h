@@ -46,7 +46,9 @@ public:
 
     CardModel();
     CardModel(CardVector* cardVector2D);
+    CardModel(QFile* cardFile);
 
+    // QAbstractListModel methods
     int rowCount(const QModelIndex &parent) const;
     QVariant data(const QModelIndex &index, int role) const;
     bool setData(const QModelIndex &index, const QVariant &value, int role);
@@ -64,6 +66,8 @@ public:
     Card* at(int index);
     void setCardFile(QFile* cardFile) { this->cardFile = cardFile; }
     void setAppWindow(QQuickWindow* appWindow) { this->appWindow = appWindow; }
+    void flattenTree(Card* subroot);
+    int getTreeDepth() { return treeDepth; }
 
 public slots:
     void addChild(int index);
@@ -74,6 +78,10 @@ private:
     QString header;
     QFile* cardFile;
     QQuickWindow* appWindow;
+    Card* root;
+    int treeDepth;
+
+    void addSpacers(int count, Card* parent);
 
     // UI navigation functions
     int moveUp(int index) const;

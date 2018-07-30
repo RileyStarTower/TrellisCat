@@ -33,13 +33,11 @@ Card::Card()
     cardType = 1;
 }
 
-// Getter
 QVariant Card::getCardText()
 {
     return cardText;
 }
 
-// Setter
 bool Card::setCardText(QVariant text)
 {
     cardText = text.toString();
@@ -68,10 +66,20 @@ void Card::removeChild(int index)
     childList.remove(index);
 }
 
+Card* Card::getFirstChild()
+{
+    return childList.first();
+}
+
 // Return the child at the end of the card's child list
 Card* Card::getLastChild()
 {
     return childList.last();
+}
+
+Card* Card::getChild(int index)
+{
+    return childList.at(index);
 }
 
 /**
