@@ -13,7 +13,6 @@
 
 #include "card.h"
 #include "spacercard.h"
-#include "cardvector.h"
 
 /**
  * @brief A single column of Cards
@@ -29,6 +28,8 @@
 class CardModel : public QAbstractListModel
 {
     Q_OBJECT
+    Q_PROPERTY(int gridWidth READ gridWidth NOTIFY gridWidthChanged)
+    Q_PROPERTY(QString projectFilename READ projectFilename WRITE setProjectFilename NOTIFY projectFilenameChanged)
 
 public:
     // enum used by the data function to send data to the view
@@ -40,15 +41,14 @@ public:
         MoveUp,
         MoveDown,
         MoveRight,
-        MoveLeft,
-        GridWidth
+        MoveLeft //,
+//        GridWidth
     };
 
     CardModel();
-    CardModel(CardVector* cardVector2D);
     CardModel(QFile* cardFile);
 
-    // QAbstractListModel methods
+    // QAbstractListModel and Q_PROPERTY methods
     int rowCount(const QModelIndex &parent) const;
     QVariant data(const QModelIndex &index, int role) const;
     bool setData(const QModelIndex &index, const QVariant &value, int role);
@@ -58,30 +58,41 @@ public:
     Qt::ItemFlags flags(const QModelIndex &index) const;
     bool insertRows(int row, int count, const QModelIndex &parent);
     bool removeRows(int row, int count, const QModelIndex &parent);
+    int gridWidth();
+    QString projectFilename() { return m_projectFilename; }
 
     // custom methods
     bool appendCard(Card* card);
     Card* getRoot();
     int size();
     Card* at(int index);
-    void setCardFile(QFile* cardFile) { this->cardFile = cardFile; }
     void setAppWindow(QQuickWindow* appWindow) { this->appWindow = appWindow; }
     void flattenTree(Card* subroot);
     int getTreeDepth() { return treeDepth; }
+    Q_INVOKABLE void writeAllCards();
+    Q_INVOKABLE void loadNewFile(QString filename);
+
+signals:
+    void gridWidthChanged();
+    void projectFilenameChanged();
+
 
 public slots:
     void addChild(int index);
+    void setProjectFilename(QString filename);
 
 private:
     QVector<Card*> cardVector;
-    CardVector* cardVector2D;
     QString header;
     QFile* cardFile;
+    QString m_projectFilename;
     QQuickWindow* appWindow;
     Card* root;
     int treeDepth;
 
-    void addSpacers(int count, Card* parent);
+    void addSpacers(int count, Card* parent, bool hasConnectors = true);
+    void writeAllChildCards(Card* subroot, QTextStream* out);
+
 
     // UI navigation functions
     int moveUp(int index) const;

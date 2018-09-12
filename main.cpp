@@ -22,22 +22,17 @@ int main(int argc, char *argv[])
     QGuiApplication app(argc, argv);
     QQmlApplicationEngine engine;
     QQmlContext* context = engine.rootContext();
+    qmlRegisterType<CardModel>("com.startowerstudio.cardmodel", 1, 0, "CardModel");
 
     // TODO: add file selection
     QString docsPath = QStandardPaths::locate(QStandardPaths::DocumentsLocation, "TrellCat Documents", QStandardPaths::LocateDirectory) + "/";// + "/TrellCat Documents/"; //"/home/riley/Documents/TrellCat Documents/";
     QString fileName = "Test";
-//    QString extension = ".tcpro";
-//    QString test = "." + QString::fromUtf8("\xF0\x9F\x90\xB1");
     QString extension = ".🐱";
-//    QString extension = "\u1F431";
     QFile file(docsPath + fileName + extension);
 
-    // The CardVector object needs to have a reference to the file so it can read and write
-//    CardVector* cardVector = new CardVector(&file);
-
     CardModel* flatModel = new CardModel(&file);
-    context->setContextProperty("gridModel", flatModel);
-    flatModel->setCardFile(&file);
+//    context->setContextProperty("gridModel", flatModel);
+//    flatModel->setCardFile(&file);
 
     engine.load(QUrl(QStringLiteral("qrc:/main.qml")));
 
@@ -46,9 +41,10 @@ int main(int argc, char *argv[])
     QObject::connect(appWindow, SIGNAL(addChild(int)), flatModel, SLOT(addChild(int)));
 
     appWindow->setTitle(fileName + " - TrellCat");
+
     // update the width of the GridView
-    QObject* gridView = appWindow->findChild<QObject*>("cardGrid");
-    gridView->setProperty("width", (flatModel->getTreeDepth()) * 400);
+//    QObject* gridView = appWindow->findChild<QObject*>("cardGrid");
+//    gridView->setProperty("width", (flatModel->getTreeDepth()) * 400);
     flatModel->setAppWindow(appWindow); // TODO: come up with a more elegant solution
 
     return app.exec();

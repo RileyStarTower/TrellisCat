@@ -2,18 +2,10 @@
 
 #include "cardmodel.h"
 
-CardModel::CardModel() : QAbstractListModel() {}
-
-CardModel::CardModel(CardVector* cardVector2D) : QAbstractListModel()
+CardModel::CardModel()
 {
-    this->cardVector2D = cardVector2D;
-    for (int i = 0; i < cardVector2D->vectorSize(); i++) {
-        for (int j = 1; j < cardVector2D->getColumnCount(); j++) {
-            QVector<Card*>* column = cardVector2D->getColumn(j);
-            appendCard(column->at(i));
-        }
-    }
-    QObject::connect(this, &QAbstractItemModel::dataChanged, cardVector2D, &CardVector::writeAllCards);
+    treeDepth = 0;
+    cardFile = 0;
 }
 
 CardModel::CardModel(QFile *cardFile) : QAbstractListModel()
@@ -37,6 +29,7 @@ CardModel::CardModel(QFile *cardFile) : QAbstractListModel()
         if (newCard->getLevel() == 1000)
         {
             // this Card is just body text, so add it to that vector
+            // TODO: add a body text vector
             continue;
         } else {
             childLevel = parent->getLevel() + 1;
@@ -46,7 +39,7 @@ CardModel::CardModel(QFile *cardFile) : QAbstractListModel()
         }
     }
 
-//    root->addSpacers();
+    cardFile->close();
     flattenTree(root);
 }
 
@@ -58,7 +51,7 @@ void CardModel::flattenTree(Card* subroot)
 
     // pre-order traversal, and fill in spacers if where needed
     if (subroot->getChildCount() < 1) {
-        addSpacers(treeDepth - subroot->getLevel(), subroot);
+        addSpacers(treeDepth - subroot->getLevel(), subroot, false);
     } else {
         for (int i = 0; i < subroot->getChildCount(); i++) {
             if (i > 0) {
@@ -69,10 +62,14 @@ void CardModel::flattenTree(Card* subroot)
     }
 }
 
-void CardModel::addSpacers(int count, Card* parent)
+void CardModel::addSpacers(int count, Card* parent, bool hasConnectors)
 {
     for (int i = 0; i < count; i++) {
-        cardVector.append(new SpacerCard(parent));
+        SpacerCard* spacer = new SpacerCard(parent);
+        cardVector.append(spacer);
+        if (!hasConnectors) {
+            spacer->setSiblingType(0);
+        }
     }
 }
 
@@ -97,7 +94,7 @@ QVariant CardModel::data(const QModelIndex &index, int role) const
     case MoveDown : return moveDown(index.row());
     case MoveRight : return moveRight(index.row());
     case MoveLeft : return moveLeft(index.row());
-    case GridWidth : return cardVector2D->getColumnCount() * 410; // TODO: there's a hard coded thing here...
+//    case GridWidth : return treeDepth * 410; // TODO: there's a hard coded thing here...
     default : return "Error";
     }
 }
@@ -110,7 +107,7 @@ bool CardModel::setData(const QModelIndex &index, const QVariant &value, int rol
         int row = index.row();
         Card* card = cardVector.at(row);
         bool ret = card->setCardText(value);
-//        todo: write all cards
+        writeAllCards();
         emit dataChanged(index, index);
 
         return ret;
@@ -153,7 +150,7 @@ QHash<int, QByteArray> CardModel::roleNames() const
     roles[MoveDown]         = "moveDown";
     roles[MoveRight]        = "moveRight";
     roles[MoveLeft]         = "moveLeft";
-    roles[GridWidth]        = "gridWidth";
+//    roles[GridWidth]        = "gridWidth";
     return roles;
 }
 
@@ -185,6 +182,12 @@ bool CardModel::removeRows(int row, int count, const QModelIndex &parent)
     return true; // TODO: we can return false if we do some validation first
 }
 
+int CardModel::gridWidth()
+{
+    // TODO: don't hard code that number
+    return treeDepth * 400;
+}
+
 // adds a Card to the model
 bool CardModel::appendCard(Card *card)
 {
@@ -208,6 +211,96 @@ Card* CardModel::at(int index)
     return cardVector.at(index);
 }
 
+void CardModel::setProjectFilename(QString filename)
+{
+    m_projectFilename = filename;
+//    loadNewFile();
+}
+
+void CardModel::loadNewFile(QString filename)
+{
+    cardFile = new QFile(filename.right(filename.length() - 8)); // TODO: there was some garbage I had to remove. Is it always gonna be there?
+
+    // validate the file
+    if (!cardFile->open(QIODevice::ReadOnly | QIODevice::Text)) return; // TODO: add error handling
+
+    // initialization
+    QTextStream in(cardFile);
+    Card* parent = new Card(); // the first Card is just the root
+    root = parent;
+    int childLevel = 1;
+    treeDepth = childLevel;
+    cardVector.clear();
+    int count = 0;
+
+    // build the underlying tree before populating the model
+    while (!in.atEnd()) {
+        QString line = in.readLine();
+
+        Card* newCard = new Card(line);
+        count++;
+        parent = newCard->resolveParent(parent, childLevel);
+
+        if (newCard->getLevel() == 1000)
+        {
+            // this Card is just body text, so add it to that vector
+            // TODO: add a body text vector
+            continue;
+        } else {
+            childLevel = parent->getLevel() + 1;
+            if (childLevel > treeDepth) {
+                treeDepth = childLevel;
+            }
+        }
+    }
+    cardFile->close();
+
+    // populate the model
+    // TODO: count isn't correct here because it doesn't count the spacers
+    beginInsertRows(QModelIndex(), 0, count - 1);
+    flattenTree(root);
+    endInsertRows();
+    emit dataChanged(index(0), index(count - 1));
+}
+
+void CardModel::writeAllCards()
+{
+    if (!cardFile) return;
+    if (!cardFile->open(QIODevice::WriteOnly | QIODevice::Text)) return; // TODO: add error handling
+
+    QTextStream out(cardFile);
+
+    // we start from the root card, and navigate all the child lists
+    writeAllChildCards(root, &out);
+
+    cardFile->close();
+}
+
+void CardModel::writeAllChildCards(Card* subroot, QTextStream* out)
+{
+    // TODO: don't use hard coded type values
+    if (subroot->getCardType() == 1) {
+        // only write Card objects, ignore fillers
+
+        // write the current root if it has anything
+        if (subroot->getLevel() > 0)
+            (*out) << subroot->getFileText() << "\n";
+
+        // write all the associated body text
+        QVector<Card*> bodyTextVector = subroot->getBodyTextList();
+        for (Card* bodyText : bodyTextVector)
+        {
+            (*out) << bodyText->getFileText() << "\n";
+        }
+
+        // recursively navigate through all children
+        for (Card* card : subroot->getChildList())
+        {
+            writeAllChildCards(card, out);
+        }
+    }
+}
+
 // called from QML when adding a new child from the GUI
 void CardModel::addChild(int index)
 {
@@ -226,28 +319,28 @@ void CardModel::addChild(int index)
     }
 
     // update the underlying 2D vector
-    cardVector2D->insertCard(child, child->getLevel(), index);
-    cardVector2D->updateSpacers(child);
+//    cardVector2D->insertCard(child, child->getLevel(), index);
+//    cardVector2D->updateSpacers(child);
 
     // update the flattened model
     // TODO: do this directly instead of rebuilding the whole thing
-    int count = cardVector2D->getColumnCount() * cardVector2D->vectorSize();
-    beginRemoveRows(QModelIndex(), 0, count);
-    cardVector.clear();
-    endRemoveRows();
+//    int count = cardVector2D->getColumnCount() * cardVector2D->vectorSize();
+//    beginRemoveRows(QModelIndex(), 0, count);
+//    cardVector.clear();
+//    endRemoveRows();
 
-    beginInsertRows(QModelIndex(), 0, count);
-    for (int i = 0; i < cardVector2D->vectorSize(); i++) {
-        for (int j = 1; j < cardVector2D->getColumnCount(); j++) {
-            // TODO: add a 2D index function so we don't have to get a column each time
-            QVector<Card*>* column = cardVector2D->getColumn(j);
-            appendCard(column->at(i));
-        }
-    }
-    endInsertRows();
+//    beginInsertRows(QModelIndex(), 0, count);
+//    for (int i = 0; i < cardVector2D->vectorSize(); i++) {
+//        for (int j = 1; j < cardVector2D->getColumnCount(); j++) {
+//            // TODO: add a 2D index function so we don't have to get a column each time
+//            QVector<Card*>* column = cardVector2D->getColumn(j);
+//            appendCard(column->at(i));
+//        }
+//    }
+//    endInsertRows();
 
     QObject* gridView = appWindow->findChild<QObject*>("cardGrid");
-    gridView->setProperty("width", (cardVector2D->getColumnCount() - 1) * 400);
+    gridView->setProperty("width", (treeDepth) * 400);
 }
 
 int CardModel::moveUp(int index) const

@@ -14,6 +14,7 @@ Card::Card(QString fileLine)
     parent = Q_NULLPTR;
 
     cardType = 1;
+    siblingType = -1;
 }
 
 Card::Card(int level, Card* parent)
@@ -22,6 +23,7 @@ Card::Card(int level, Card* parent)
     this->parent = parent;
     cardText = "";
     cardType = 1;
+    siblingType = -1;
 }
 
 // Constructor with no input, just initialize everything
@@ -31,6 +33,7 @@ Card::Card()
     level = 0;
     cardText = "";
     cardType = 1;
+    siblingType = -1;
 }
 
 QVariant Card::getCardText()
@@ -170,7 +173,9 @@ int Card::getChildType()
 
 int Card::getSiblingType()
 {
-    if ((parent->getChildList().size() == 1) || (parent->getLevel() == 0)) {
+    if (siblingType != -1) {
+        return siblingType;
+    } else if ((parent->getChildList().size() == 1) || (parent->getLevel() == 0)) {
         // only child, and the top level is type 0
         return 0;
     } else if (parent->getChildList().indexOf(this) == 0) {

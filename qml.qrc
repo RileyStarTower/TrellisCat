@@ -4,5 +4,7 @@
         <file>qtquickcontrols2.conf</file>
         <file>CardView.qml</file>
         <file>CardEdit.qml</file>
+        <file>CardGrid.qml</file>
+        <file>loadCardGrid.js</file>
     </qresource>
 </RCC>

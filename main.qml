@@ -1,8 +1,11 @@
 import QtQuick 2.7
 import QtQuick.Controls 1.4
+import QtQuick.Controls.Styles 1.4
 import QtQuick.Layouts 1.2
 import QtQuick.Window 2.0
 import QtQuick.Dialogs 1.1
+import com.startowerstudio.cardmodel 1.0
+import "loadCardGrid.js" as TCFileManager
 
 ApplicationWindow {
     id: appWindow
@@ -11,11 +14,17 @@ ApplicationWindow {
     width: 640
     height: 480
     title: qsTr("TrellCat")
-    color: "#160732"
+    color: "#1607a2"
 
     signal addChild(int index)
 
+//    property int gridWidth: 1200
+//    CardModel {
+//        id: currentModel
+//    }
+
     menuBar: MenuBar {
+        id: menuBar
         Menu {
             title: "&File"
             MenuItem {
@@ -28,25 +37,38 @@ ApplicationWindow {
                 shortcut: StandardKey.Open
                 onTriggered: fileDialog.open()
             }
+            MenuItem {
+                text: "&Close"
+                shortcut: StandardKey.Close
+                onTriggered: closeProject()
+            }
         }
     }
 
-    GridView {
-        id: cardGrid
-        objectName: "cardGrid"
-        model: gridModel
-        x: 10; y: 10
-        width: 400
+    TabView {
+        anchors.fill: parent
+        id: tabView
         height: parent.height
-        cellHeight: 110
-        cellWidth: 400
-        delegate: CardView {}
-//        highlight: Rectangle { color: "lightsteelblue"; radius: 5 }
-        Keys.onPressed: {
-            if ((event.key === Qt.Key_Right) && (event.modifiers & Qt.ControlModifier)) {
-                addChild(currentIndex)
+
+        style: TabViewStyle {
+                frameOverlap: 0
+//                tab: Rectangle {
+//                    color: styleData.selected ? "lightsteelblue" :"steelblue"
+//                    border.color:  "steelblue"
+//                    implicitWidth: Math.max(text.width + 20, 80)
+//                    implicitHeight: styleData.selected ? 40 : 30
+//                    anchors.bottom: parent.bottom
+//                    radius: 2
+//                    Text {
+//                        id: text
+//                        anchors.centerIn: parent
+//                        font.pointSize: 12
+//                        text: styleData.title
+//                        color: styleData.selected ? "black" : "white"
+//                    }
+//                }
+                frame: Rectangle { color: "#160732" }
             }
-        }
     }
 
     FileDialog {
@@ -57,19 +79,17 @@ ApplicationWindow {
         selectExisting: true
         selectMultiple: false
         selectFolder: false
-        // , *.🐱
         nameFilters: [ "TrellCat files (*.tcpro *.🐱)", "All files (*)" ]
         selectedNameFilter: nameFilters[0]
         onAccepted: {
-            console.log("Accepted: " + fileUrls)
-            if (fileDialogOpenFiles.checked)
-                for (var i = 0; i < fileUrls.length; ++i)
-                    Qt.openUrlExternally(fileUrls[i])
+            TCFileManager.attemptLoad(fileUrls);
         }
-        onRejected: { console.log("Rejected: " + buildExtensions()) }
+        onRejected: { console.log("Rejected file") }
+    }
 
-        function buildExtensions () {
-            return "*.tcpro, *.🐱"
-        }
+    function closeProject() {
+        var tab = tabView.getTab(tabView.currentIndex);
+        tab.item.close();
+        tabView.removeTab(tabView.currentIndex);
     }
 }

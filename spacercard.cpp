@@ -2,30 +2,30 @@
 
 #include "spacercard.h"
 
-// This constructor inserts a spacer in the parent's child list after the sibling Card
-SpacerCard::SpacerCard(Card* parent, int level, Card* sibling)
-{
-    cardType = 2;
-    // TODO: I think there's a more compact way of initializing these
-    this->level = level;
-    this->parent = parent;
-    int spacerIndex = parent->getChildList().indexOf(sibling) + 1;
-    if (spacerIndex < parent->getChildList().size()) {
-        parent->insertChild(spacerIndex, this);
-    } else {
-        parent->addChild(this);
-    }
-}
+//// This constructor inserts a spacer in the parent's child list after the sibling Card
+//SpacerCard::SpacerCard(Card* parent, int level, Card* sibling)
+//{
+//    cardType = 2;
+//    // TODO: I think there's a more compact way of initializing these
+//    this->level = level;
+//    this->parent = parent;
+//    int spacerIndex = parent->getChildList().indexOf(sibling) + 1;
+//    if (spacerIndex < parent->getChildList().size()) {
+//        parent->insertChild(spacerIndex, this);
+//    } else {
+//        parent->addChild(this);
+//    }
+//}
 
-// This constructor just adds a spacer to the parent's child list, intended for when the child list is empty otherwise
-SpacerCard::SpacerCard(Card* parent, int level)
-{
-    cardType = 2;
-    // TODO: I think there's a more compact way of initializing these
-    this->level = level;
-    this->parent = parent;
-    parent->addChild(this);
-}
+//// This constructor just adds a spacer to the parent's child list, intended for when the child list is empty otherwise
+//SpacerCard::SpacerCard(Card* parent, int level)
+//{
+//    cardType = 2;
+//    // TODO: I think there's a more compact way of initializing these
+//    this->level = level;
+//    this->parent = parent;
+//    parent->addChild(this);
+//}
 
 // This constructor copies the sibling, and is used when we're using the parent's insert method
 SpacerCard::SpacerCard(Card* parent)
@@ -34,6 +34,7 @@ SpacerCard::SpacerCard(Card* parent)
     // TODO: I think there's a more compact way of initializing these
     this->level = parent->getLevel() + 1;
     this->parent = parent;
+    siblingType = -1;
 }
 
 // TODO: we'll need to reset this in the add card method
@@ -54,4 +55,18 @@ bool SpacerCard::followedByCard()
     }
 
     return false;
+}
+
+void SpacerCard::setSiblingType(int siblingType)
+{
+    this->siblingType = siblingType;
+}
+
+int SpacerCard::getSiblingType()
+{
+    if (siblingType != -1) {
+        return 0;
+    } else {
+        return Card::getSiblingType();
+    }
 }

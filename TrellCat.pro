@@ -5,10 +5,11 @@ CONFIG += c++11
 SOURCES += main.cpp \
     card.cpp \
     cardmodel.cpp \
-    spacercard.cpp \
-    cardvector.cpp
+    spacercard.cpp
 
 RESOURCES += qml.qrc
+
+RC_ICONS = Assets/Icons/TrellCat_Icon.ico
 
 # Additional import path used to resolve QML modules in Qt Creator's code model
 QML_IMPORT_PATH =
@@ -35,5 +36,4 @@ else: unix:!android: target.path = /opt/$${TARGET}/bin
 HEADERS += \
     card.h \
     cardmodel.h \
-    spacercard.h \
-    cardvector.h
+    spacercard.h
